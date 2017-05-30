@@ -12,9 +12,9 @@ definition(
     author: "Bruce Ravenel, Dale Coffing, Stephan Hackett",
     description: "Control devices with buttons like the Aeon Labs Minimote and Lutron Pico Remotes (see Help for details)",
     category: "Convenience",
-    iconUrl: "https://cdn.rawgit.com/stephack/MyLutron/master/resources/images/lupi125x125.png",
-    iconX2Url: "https://cdn.rawgit.com/stephack/MyLutron/master/resources/images/lupi250x250.png",
-    iconX3Url: "https://cdn.rawgit.com/stephack/MyLutron/master/resources/images/lupi250x250.png"
+    iconUrl: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png",
+    iconX2Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png",
+    iconX3Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png"
 )
 
 preferences {
@@ -48,7 +48,7 @@ def parentPage() {
         section("Version Info, User's Guide") {
        	href (name: "aboutPage", title: "Advanced Button Controller \n"+version(), 
        		description: "Tap to get Smartapp Info and User's Guide.",
-       		image: "https://cdn.rawgit.com/stephack/MyLutron/master/resources/images/lupi125x125.png", required: false,
+       		image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png", required: false,
        		page: "aboutPage"
 		)		
    		}
@@ -515,14 +515,15 @@ private timeIntervalLabel() {
 
 private def textHelp() {
 	def text =
-	" This smartapp allows you to use a device with buttons like the Aeon Labs Minimote and now, the **Lutron Picos."+
-	" It is a modified version of @dalec's Button Controller Plus SmartApp which is in turn"+
+	"This smartapp allows you to use a device with buttons including, but not limited to:\n\n  Aeon Labs Minimotes\n"+
+    "  HomeSeer HS-WD100+ switches**\n  HomeSeer HS-WS100+ switches\n  And now Lutron Picos***\n\n"+
+	"It is a modified version of @dalec's Button Controller Plus SmartApp which is in turn"+
         " a version of @bravenel's Button Controller+ SmartApp.\n\n"+
-        " The original apps were hardcoded to allow configuring 4 or 6 button devices."+
+        "The original apps were hardcoded to allow configuring 4 or 6 button devices."+
         " This app will automatically detect the number of buttons on your device or allow you to manually"+
-        "specify (only needed if device does not report on its own)\n\n."+
-	" This SmartApp also allows you to give your buton device full speaker control including: Play/Pause, NextTrack, Mute, VolumeUp/Down.\n"+
-    "(**Standard Pico remotes can be converted to Audio Picos\n\n"+
+        " specify (only needed if device does not report on its own)\n\n."+
+	"This SmartApp also allows you to give your buton device full speaker control including: Play/Pause, NextTrack, Mute, VolumeUp/Down."+
+    "(***Standard Pico remotes can be converted to Audio Picos)\n\n"+
         "The control options available are: \n"+
         "	Switches - Toggle \n"+
         "	Switches - Turn On \n"+
@@ -545,7 +546,17 @@ private def textHelp() {
         "	Sirens - Toggle \n"+
         "	Push Notifications \n"+
         "	SMS Notifications \n\n"+
-	" ** Please Note: A Lutron SmartBridge, a device running @njschwartz's python script and the Lutron Caseta Service Manager SmartApp are also required for this functionality!\nSearch the forums for details."
+	    "** Quirk for HS-WD100+ on 5/6 buttons:\n"+
+        "Because a dimmer switch already uses press&hold to manually set the dimming level"+
+        " please be aware of this operational behavior. If you only want to manually change"+
+        " the dim level to the lights that are wired to the switch you will automatically"+
+        " trigger the 5/6 button event as well. And the same is true in reverse, if you"+ 
+        " only want to trigger a 5/6 button event action with press&hold you will manually"+
+        " be changing the dim level of the switch simultaneously as well.\n"+
+        "This quirk doesn't exist of course with the HS-HS100+ since it is not a dimmer.\n\n"+
+        "*** Please Note: A Lutron SmartBridge, a device running @njschwartz's python script and the Lutron Caseta Service Manager"+
+    	"SmartApp are also required for this functionality!\nSearch the forums for details."
+    
   }
   
 
@@ -561,7 +572,7 @@ def getLutronSpec(buttonNumber) {
 	switch (buttonNumber) {
    	    case 1:
   	       	section("Hardware specific info on button selection:") { 
-           	paragraph image: "https://cdn.rawgit.com/stephack/MyLutron/master/resources/images/on3.png",
+           	paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/on3.png",
            	title: "",
             "Lutron Picos - Top Button"
             }
