@@ -4,17 +4,17 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170529"}
+def version(){"v0.1.170531"}
 
 definition(
     name: "Advanced Button Controller",
     namespace: "stephack",
     author: "Bruce Ravenel, Dale Coffing, Stephan Hackett",
-    description: "Control devices with buttons like the Aeon Labs Minimote and Lutron Pico Remotes (see Help for details)",
+    description: "Configure devices with buttons like the Aeon Labs Minimote and Lutron Pico Remotes.",
     category: "Convenience",
-    iconUrl: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png",
-    iconX2Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png",
-    iconX3Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png"
+    iconUrl: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
+    iconX2Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
+    iconX3Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png"
 )
 
 preferences {
@@ -48,7 +48,7 @@ def parentPage() {
         section("Version Info, User's Guide") {
        	href (name: "aboutPage", title: "Advanced Button Controller \n"+version(), 
        		description: "Tap to get Smartapp Info and User's Guide.",
-       		image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc.png", required: false,
+       		image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png", required: false,
        		page: "aboutPage"
 		)		
    		}
@@ -109,7 +109,7 @@ def configButtonsPage(params) {
 }
 
 def aboutPage() {
-	dynamicPage(name: "aboutPage", title: none, install: true, uninstall: true) {
+	dynamicPage(name: "aboutPage", title: none){//, install: true, uninstall: true) {
      	section("User's Guide - Advanced Button Controller") {
         	paragraph textHelp()
  		}
@@ -302,11 +302,11 @@ def defaultLabel() {
 def getPreferenceDetails(){
 	def detailMappings =
     	[[id:'lights_',desc:'Toggle On/Off:',comm:toggle],
-         [id:'lightsDT_', desc:'Toggle Off/Dim to ', comm:dimToggle, sub:"valDT"],
+         [id:'lightsDT_', desc:'Toggle Off/Dim to', comm:dimToggle, sub:"valDT"],
      	 [id:'lightOn_',desc:'Turn On:',comm:turnOn],
      	 [id:"lightOff_",desc:'Turn Off:',comm:turnOff],
-     	 [id:"lightDim_",desc:'Dim to ',comm:turnDim, sub:"valLight"],
-     	 [id:"lightD2m_",desc:'Dim to ',comm:turnDim, sub:"valLight2"],
+     	 [id:"lightDim_",desc:'Dim to',comm:turnDim, sub:"valLight"],
+     	 [id:"lightD2m_",desc:'Dim to',comm:turnDim, sub:"valLight2"],
          [id:'dimPlus_',desc:'Brightness +',comm:levelUp, sub:"valDimP"],
      	 [id:'dimMinus_',desc:'Brightness -',comm:levelDown, sub:"valDimM"],
      	 [id:"fanAdjust_",desc:'Adjust:',comm:adjustFan],
@@ -555,7 +555,7 @@ private def textHelp() {
         " be changing the dim level of the switch simultaneously as well.\n"+
         "This quirk doesn't exist of course with the HS-HS100+ since it is not a dimmer.\n\n"+
         "*** Please Note: A Lutron SmartBridge, a device running @njschwartz's python script and the Lutron Caseta Service Manager"+
-    	"SmartApp are also required for this functionality!\nSearch the forums for details."
+    	" SmartApp are also required for this functionality!\nSearch the forums for details."
     
   }
   
