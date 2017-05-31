@@ -63,7 +63,7 @@ def mainPage() {
 			input "buttonDevice", "capability.button", title: "Button Controller", multiple: false, required: true, submitOnChange: true
 		}
         if(buttonDevice){
-            state.buttonCount = manualCount?: buttonDevice.currentValue('numberOfButtons')	//set number of buttons to be what the device reports, if manual count not specified (or set to 0)
+            state.buttonCount = manualCount?: buttonDevice.currentValue('numberOfButtons')
             if(state.buttonCount==null) state.buttonCount = buttonDevice.currentValue('numButtons')	//added for kyse minimote(hopefully will be updated to correct attribute name)
        		section("Step 2: Configure Your Buttons"){
             	if(state.buttonCount<1) {
@@ -109,7 +109,7 @@ def configButtonsPage(params) {
 }
 
 def aboutPage() {
-	dynamicPage(name: "aboutPage", title: none){//, install: true, uninstall: true) {
+	dynamicPage(name: "aboutPage", title: none){
      	section("User's Guide - Advanced Button Controller") {
         	paragraph textHelp()
  		}
@@ -184,21 +184,21 @@ def getButtonSections(buttonNumber) {
 			input "speakerpp_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			input "speakerpp_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}        
-        	section("Speakers (Go to Next Track)", hideable: true, hidden: !shallHide("speakernt_${buttonNumber}")) {
+        section("Speakers (Go to Next Track)", hideable: true, hidden: !shallHide("speakernt_${buttonNumber}")) {
 			input "speakernt_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			input "speakernt_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}        
-        	section("Speakers (Toggle Mute/Unmute)", hideable: true, hidden: !shallHide("speakermu_${buttonNumber}")) {
+        section("Speakers (Toggle Mute/Unmute)", hideable: true, hidden: !shallHide("speakermu_${buttonNumber}")) {
 			input "speakermu_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			input "speakermu_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}
-        	section("Speakers (Increase Vol By)", hideable: true, hidden: !(shallHide("speakervu_${buttonNumber}") || shallHide("valSpeakU${buttonNumber}"))) {
+        section("Speakers (Increase Vol By)", hideable: true, hidden: !(shallHide("speakervu_${buttonNumber}") || shallHide("valSpeakU${buttonNumber}"))) {
 			input "speakervu_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
             input "valSpeakU${buttonNumber}_pushed", "number", title: "When Pushed Increase by", multiple: false, required: false, description: "0 to 15"
 			input "speakervu_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
             input "valSpeakU${buttonNumber}_held", "number", title: "When Held Increase by", multiple: false, required: false, description: "0 to 15"
 		}        
-          	section("Speakers (Decrease Vol By)", hideable: true, hidden: !(shallHide("speakervd_${buttonNumber}") || shallHide("valSpeakD${buttonNumber}"))) {
+        section("Speakers (Decrease Vol By)", hideable: true, hidden: !(shallHide("speakervd_${buttonNumber}") || shallHide("valSpeakD${buttonNumber}"))) {
 			input "speakervd_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
             input "valSpeakD${buttonNumber}_pushed", "number", title: "When Pushed Decrease by", multiple: false, required: false, description: "0 to 15"
 			input "speakervd_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
@@ -217,8 +217,23 @@ def getButtonSections(buttonNumber) {
 				input "phrase_${buttonNumber}_held", "enum", title: "When Held", required: false, options: phrases, submitOnChange: collapseAll
 			}
 		}
-		section(" "){}
-		section("Push Notification", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {
+        section("Notifications:\nSMS, In App or Both", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {
+        paragraph "****************\nWHEN PUSHED\n****************"
+			input "notifications_${buttonNumber}_pushed", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
+            input "phone_${buttonNumber}_pushed","phone" ,title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
+            input "valNotify${buttonNumber}_pushed","bool" ,title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll
+            paragraph "*************\nWHEN HELD\n*************"
+			input "notifications_${buttonNumber}_held", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
+		//}
+       // section("Type of Notification to Send", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {	//!(shallHide("valNotify${buttonNumber}" || "phone_${buttonNumber}"))) {
+			input "phone_${buttonNumber}_held", "phone", title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
+			input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll
+			
+			
+		}
+
+
+/*		section("Push Notification", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {
 			input "notifications_${buttonNumber}_pushed","bool" ,title: "When Pushed", required: false, defaultValue: false, submitOnChange: collapseAll
 			input "notifications_${buttonNumber}_held", "bool", title: "When Held", required: false, defaultValue: false, submitOnChange: collapseAll
 		}
@@ -230,23 +245,24 @@ def getButtonSections(buttonNumber) {
 			input "valText${buttonNumber}_pushed", "text", title: "When Pushed", description: "Enter message to send", required: false, submitOnChange: collapseAll
 			input "valText${buttonNumber}_held", "text", title: "When Held", description: "Enter message to send", required: false, submitOnChange: collapseAll
 		}
+*/        
 	}
 }
 
-def shallHide(myFeature) {	//unhide if feature configured
+def shallHide(myFeature) {
 	if(collapseAll) return (settings["${myFeature}_pushed"]||settings["${myFeature}_held"]||settings["${myFeature}"])
 	return true
 }
 
 def getDescription(dNumber) {	
     def descript = "Tap to Configure"
-    def anySettings = settings.findAll{it.key.contains("_${dNumber}_") && it.value != false}	//notification is a bool setting has false value by default
-    if(anySettings) descript = "CONFIGURED: Tap to edit"
+    def anySettings = settings.find{it.key.contains("_${dNumber}_")}
+    if(anySettings) descript = "CONFIGURED : Tap to edit"
 	return descript
 }
 
 def getConfirmPage(numType){
-	def preferenceNames = settings.findAll{it.key.contains("_${numType}") && it.value != false}.sort()	//get all configured settings that: match button# and type, AND are not false
+	def preferenceNames = settings.findAll{it.key.contains("_${numType}")}.sort()		//get all configured settings that: match button# and type, AND are not false
     if(!preferenceNames){
     	return "  *Not Configured*\n"
     }
@@ -254,11 +270,11 @@ def getConfirmPage(numType){
     	def formattedPage ="   "
     	preferenceNames.each {eachPref->		
         	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
-        	def prefValue = "${eachPref.value}"	//name of device the action is being performed on (eg Bedroom Fan)
-        	if(prefDetail.sub) {	//if a sub value is found (eg dimVal) prefix to prefValue
-        		def PrefSubValue = settings[prefDetail.sub + numType]?:"!Missing!"	//value stored in val setting (eg 100)
+        	def prefValue = eachPref.value												//name of device the action is being performed on (eg Bedroom Fan)
+            if(prefDetail.sub) {														//if a sub value is found (eg dimVal) prefix to prefValue
+        		def PrefSubValue = settings[prefDetail.sub + numType]?:"!Missing!"		//value stored in val setting (eg 100)
                 //log.error eachPref.value
-        		if(eachPref.value==true) prefValue = "(${PrefSubValue})" else prefValue = "(${PrefSubValue}): ${prefValue}"
+        		if(PrefSubValue==true) prefValue = "(${prefValue})" else prefValue = "(${PrefSubValue}): ${prefValue}"
             }              	
         	formattedPage += prefDetail.desc+" "+prefValue+"\n   "
     	}
@@ -318,9 +334,11 @@ def getPreferenceDetails(){
      	 [id:'speakervu_',desc:'Volume +',comm:levelUp, sub:"valSpeakU"],
      	 [id:"speakervd_",desc:'Volume -',comm:levelDown, sub:"valSpeakD"],
      	 [id:"mode_",desc:'Set Mode:',comm:changeMode],
-         [id:"notifications_",desc:'InApp Notify',comm:messageHandle, sub: "valText"],
+         [id:"notifications_",desc:'InApp Msg',comm:messageHandle, sub: "valNotify"],
+         //[id:"notifications_",desc:'InApp Notify',comm:messageHandle, sub: "valText"],
          [id:'sirens_',desc:'Toggle:',comm:toggle],
-     	 [id:"phone_",desc:'SMS Notify',comm:messageHandle, sub:"valText"],
+     	 [id:"phone_",desc:'SMS Msg',comm:smsHandle, sub:"notifications_"],
+         //[id:"phone_",desc:'SMS Notify',comm:messageHandle, sub:"valText"],
      	 [id:"phrase_",desc:'Run Routine:',comm:runRout],
         ]         
     return detailMappings
@@ -332,9 +350,9 @@ def buttonEvent(evt) {
 		def pressType = evt.value
 		log.debug "$buttonDevice: Button $buttonNumber was $pressType"
     
-    	def preferenceNames = settings.findAll{it.key.contains("_${buttonNumber}_${pressType}") && it.value!=false}
+    	def preferenceNames = settings.findAll{it.key.contains("_${buttonNumber}_${pressType}")}
     	preferenceNames.each{eachPref->
-        	def prefDetail = getPreferenceDetails()?.find{eachPref.key.contains(it.id)}	//returns the map of id,desc,comm,sub
+        	def prefDetail = getPreferenceDetails()?.find{eachPref.key.contains(it.id)}		//returns the detail map of id,desc,comm,sub
         	def PrefSubValue = settings["${prefDetail.sub}${buttonNumber}_${pressType}"]	//value of subsetting (eg 100)
         	if(prefDetail.sub) "$prefDetail.comm"(eachPref.value,PrefSubValue)
         	else "$prefDetail.comm"(eachPref.value)
@@ -442,15 +460,16 @@ def runRout(rout){
 	location.helloHome.execute(rout)
 }
 
-def messageHandle(msgType,msg) {
-	if(msgType==true) {
+def messageHandle(msg, inApp) {
+	if(inApp==true) {
     	log.debug "Push notification sent"
-    	sendPush(msg ?: "No custom text custom entered on: $app.label")
+    	sendPush(msg)
 	}
-    else {
-    	log.debug "SMS sent"
-    	sendSms(msgType, msg ?:"No custom text custom entered on: $app.label")
-    }
+}
+
+def smsHandle(phone, msg){
+    log.debug "SMS sent"
+    sendSms(phone, msg ?:"No custom text entered on: $app.label")
 }
 
 def changeMode(mode) {
