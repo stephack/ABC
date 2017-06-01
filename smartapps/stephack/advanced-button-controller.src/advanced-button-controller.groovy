@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170531"}
+def version(){"v0.1.170601"}
 
 definition(
     name: "Advanced Button Controller",
@@ -71,7 +71,7 @@ def mainPage() {
                 }
                 else {
                 	for(i in 1..state.buttonCount){
-                		href "configButtonsPage", title: "Button ${i}", description: getDescription(i), params: [pbutton: i]
+                		href "configButtonsPage", title: "Button ${i} - (Tap to Edit)", description: getDescription(i), params: [pbutton: i]
                     }
             	}                
             }            
@@ -90,10 +90,10 @@ def mainPage() {
 			input "days", "enum", title: "Only on certain days of the week", multiple: true, required: false,
 					options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 			input "modes", "mode", title: "Only when mode is", multiple: true, required: false
-		}        
+		}       
 	}
 }
-
+///////////////TO BE REMOVED///////////////
 def confirmPage() {
 	dynamicPage(name: "confirmPage", title: "Confirm all button settings are as desired below.", uninstall: true, install: true) {
     	for(i in 1..state.buttonCount){
@@ -255,19 +255,20 @@ def shallHide(myFeature) {
 }
 
 def getDescription(dNumber) {	
-    def descript = "Tap to Configure"
+    def descript = "Nothing Configured"
     def anySettings = settings.find{it.key.contains("_${dNumber}_")}
-    if(anySettings) descript = "CONFIGURED : Tap to edit"
+    log.error anySettings
+    if(anySettings) descript = "PUSHED:\n"+getConfirmPage("${dNumber}_pushed")+"\nHELD:\n"+getConfirmPage("${dNumber}_held")//"CONFIGURED : Tap to edit"
 	return descript
 }
 
 def getConfirmPage(numType){
 	def preferenceNames = settings.findAll{it.key.contains("_${numType}")}.sort()		//get all configured settings that: match button# and type, AND are not false
     if(!preferenceNames){
-    	return "  *Not Configured*\n"
+    	return "   **Not Configured**"
     }
     else {
-    	def formattedPage ="   "
+    	def formattedPage =""
     	preferenceNames.each {eachPref->		
         	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
         	def prefValue = eachPref.value												//name of device the action is being performed on (eg Bedroom Fan)
@@ -276,7 +277,7 @@ def getConfirmPage(numType){
                 //log.error eachPref.value
         		if(PrefSubValue==true) prefValue = "(${prefValue})" else prefValue = "(${PrefSubValue}): ${prefValue}"
             }              	
-        	formattedPage += prefDetail.desc+" "+prefValue+"\n   "
+        	formattedPage += "   "+prefDetail.desc+" "+prefValue+"\n"
     	}
 		return formattedPage
     }
