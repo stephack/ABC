@@ -223,7 +223,6 @@ def getButtonSections(buttonNumber) {
 }
 
 def showHeld() {
-log.debug state.buttonType 
 if(state.buttonType.contains("100+")) return false
 else return true
 }
