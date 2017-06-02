@@ -554,7 +554,7 @@ private def textHelp() {
   
 def getButtonSpecifics(buttonNumber) {
 	if(hwSpecifics== true && state.buttonType.contains("Lutron Pico")) getLutronSpec(buttonNumber)
-    if(hwSpecifics== true && state.buttonType.contains("WD100+ Dimmer") || state.buttonType.contains("WS100+ Switch")) getHomeSeerSpec(buttonNumber)
+    if(hwSpecifics== true && (state.buttonType.contains("WD100+ Dimmer") || state.buttonType.contains("WS100+ Switch"))) getHomeSeerSpec(buttonNumber)
 	if(hwSpecifics== true && state.buttonType.contains("Aeon Minimote")) getAeonSpec(buttonNumber)
 }
 
