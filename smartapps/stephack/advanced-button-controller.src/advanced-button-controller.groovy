@@ -62,6 +62,8 @@ def mainPage() {
 			input "buttonDevice", "capability.button", title: "Button Controller", multiple: false, required: true, submitOnChange: true
 		}
         if(buttonDevice){
+        	state.buttonType =  buttonDevice.typeName
+            log.debug "Device Type is now set to: "+state.buttonType
             state.buttonCount = manualCount?: buttonDevice.currentValue('numberOfButtons')
             if(state.buttonCount==null) state.buttonCount = buttonDevice.currentValue('numButtons')	//added for kyse minimote(hopefully will be updated to correct attribute name)
        		section("Step 2: Configure Your Buttons"){
@@ -81,7 +83,7 @@ def mainPage() {
         section("Advanced Config:", hideable: true, hidden: hideOptionsSection()) { 
             	input "manualCount", "number", title: "How many Buttons on remote?", required: false, description: "Only set if DTH does not specify", submitOnChange: true
                 input "collapseAll", "bool", title: "Only show sections that have been configured?", defaultValue: "true"
-                input "hwSpecifics", "enum", title: "Include H/W specific details?", options: ["None", "Lutron Pico", "HomeSeer"], defaultValue: "None", submitOnChange: true
+                input "hwSpecifics", "bool", title: "Include H/W specific details?", defaultValue: false, submitOnChange: true
 			}
         section(title: "Only Execute When:", hideable: true, hidden: hideOptionsSection()) {
 			def timeLabel = timeIntervalLabel()
@@ -550,13 +552,10 @@ private def textHelp() {
     
   }
   
-
-
 def getButtonSpecifics(buttonNumber) {
-
-	if(hwSpecifics=="Lutron Pico") getLutronSpec(buttonNumber)
-    if(hwSpecifics=="HomeSeer") getHomeSeerSpec(buttonNumber)
-	if(hwSpecifics=="None") return
+	if(hwSpecifics== true && state.buttonType.contains("Lutron Pico")) getLutronSpec(buttonNumber)
+    if(hwSpecifics== true && state.buttonType.contains("WD100+ Dimmer") || state.buttonType.contains("WS100+ Switch")) getHomeSeerSpec(buttonNumber)
+	if(hwSpecifics== true && state.buttonType.contains("Aeon Minimote")) getAeonSpec(buttonNumber)
 }
 
 def getLutronSpec(buttonNumber) {
@@ -606,34 +605,60 @@ def getLutronSpec(buttonNumber) {
 	}
 }
 
+def getAeonSpec(buttonNumber){
+	switch (buttonNumber) {
+   	    case 1:
+  	        section("Hardware specific info on button selection:") {  
+           	paragraph "Aeon Minimote - Button 1 is upper left when operating in hand."             
+            }
+     	break
+        case 2:
+           	section("Hardware specific info on button selection:") {  
+        	paragraph "Aeon Minimote - Button 2 is upper right when operating in hand." 
+            }
+  		break
+        case 3:
+           	section("Hardware specific info on button selection:") {  
+        	paragraph "Aeon Minimote - Button 3 is lower left when operating in hand."
+            }
+		break
+       	case 4:
+           	section("Hardware specific info on button selection:") {  
+       		paragraph "Aeon Minimote - Button 4 is lower right when operating in hand." 
+            }
+       	break        
+        default:
+           	section("Hardware specific info on button selection:") {  
+            paragraph "Aeon - NOT USED"
+        	}
+		break
+   	}        	
+}
+
 def getHomeSeerSpec(buttonNumber){
 	switch (buttonNumber) {
    	    case 1:
   	        section("Hardware specific info on button selection:") {  
            	paragraph "WD100+ or WS100+ devices; this FIRST Button action occurs with a double-tap on upper paddle.\n"+
-			"*Select 'Pushed' (not 'Held') options.\n\nAeon Minimote; FIRST button is upper left when operating in hand.\n"+
-			"*Select 'Pushed' and/or 'Held' options."             
+			"*Select 'Pushed' (not 'Held') options."             
             }
      	break
         case 2:
            	section("Hardware specific info on button selection:") {  
         	paragraph "WD100+ or WS100+ devices; this SECOND Button action occurs with a double-tap on lower paddle.\n"+
-			" *Select 'Pushed' (not 'Held') options.\n\nAeon Minimote; SECOND button is upper right when operating in hand.)\n"+
-			"*Select 'Pushed' and/or 'Held' options." 
+			" *Select 'Pushed' (not 'Held') options." 
             }
   		break
         case 3:
            	section("Hardware specific info on button selection:") {  
         	paragraph "WD100+ or WS100+ devices; this THIRD Button action occurs with a triple-tap on upper paddle.\n"+
-			" *Select 'Pushed' (not 'Held') options.\n\nAeon Minimote; THIRD button is lower left when operating in hand.)\n"+
-			"*Select 'Pushed' and/or 'Held' options."
+			" *Select 'Pushed' (not 'Held') options."
             }
 		break
        	case 4:
            	section("Hardware specific info on button selection:") {  
        		paragraph "WD100+ or WS100+ devices; this FOURTH Button action occurs with a triple-tap on lower paddle.\n"+
-			" *Select 'Pushed' (not 'Held') options.\n\nAeon Minimote; FOURTH button is lower right when operating in hand.\n"+
-			"*Select 'Pushed' and/or 'Held' options." 
+			" *Select 'Pushed' (not 'Held') options." 
             }
        	break
         case 5:
