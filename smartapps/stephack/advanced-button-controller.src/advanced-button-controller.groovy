@@ -20,9 +20,8 @@ definition(
 preferences {
 	page(name: "startPage")
     page(name: "parentPage")      
-	page(name: "mainPage", nextPage: confirmPage)
+	page(name: "mainPage")
 	page(name: "configButtonsPage")
-    page(name: "confirmPage")
     page(name: "aboutPage")
 	page(name: "timeIntervalInput", title: "Only during a certain time") {
 		section {
@@ -42,7 +41,7 @@ def startPage() {
 
 def parentPage() {
 	return dynamicPage(name: "parentPage", title: "", install: true, uninstall: true) {
-        section("Create a new button mapping.") {
+        section("Create a new button control mapping.") {
             app(name: "childApps", appName: appName(), namespace: "stephack", title: "New Button Mapping", multiple: true)
         }
         section("Version Info, User's Guide") {
@@ -92,15 +91,6 @@ def mainPage() {
 			input "modes", "mode", title: "Only when mode is", multiple: true, required: false
 		}       
 	}
-}
-///////////////TO BE REMOVED///////////////
-def confirmPage() {
-	dynamicPage(name: "confirmPage", title: "Confirm all button settings are as desired below.", uninstall: true, install: true) {
-    	for(i in 1..state.buttonCount){
-        	section("BUTTON ${i} PUSHED:\n"+getConfirmPage("${i}_pushed")+"\n"+"BUTTON ${i} HELD:\n"+getConfirmPage("${i}_held")) {
-        	}
-        }    
-    }
 }
 
 def configButtonsPage(params) {
@@ -224,28 +214,9 @@ def getButtonSections(buttonNumber) {
             input "valNotify${buttonNumber}_pushed","bool" ,title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll
             paragraph "*************\nWHEN HELD\n*************"
 			input "notifications_${buttonNumber}_held", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
-		//}
-       // section("Type of Notification to Send", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {	//!(shallHide("valNotify${buttonNumber}" || "phone_${buttonNumber}"))) {
 			input "phone_${buttonNumber}_held", "phone", title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
-			input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll
-			
-			
-		}
-
-
-/*		section("Push Notification", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {
-			input "notifications_${buttonNumber}_pushed","bool" ,title: "When Pushed", required: false, defaultValue: false, submitOnChange: collapseAll
-			input "notifications_${buttonNumber}_held", "bool", title: "When Held", required: false, defaultValue: false, submitOnChange: collapseAll
-		}
-		section("SMS Notification", hideable: true, hidden: !shallHide("phone_${buttonNumber}")) {
-			input "phone_${buttonNumber}_pushed","phone" ,title: "When Pushed", description: "Enter phone number", required: false, submitOnChange: collapseAll
-			input "phone_${buttonNumber}_held", "phone", title: "When Held", description: "Enter phone number", required: false, submitOnChange: collapseAll
-		}
-        section("Custom Message Notifications", hideable: true, hidden: !shallHide("valText${buttonNumber}")) {
-			input "valText${buttonNumber}_pushed", "text", title: "When Pushed", description: "Enter message to send", required: false, submitOnChange: collapseAll
-			input "valText${buttonNumber}_held", "text", title: "When Held", description: "Enter message to send", required: false, submitOnChange: collapseAll
-		}
-*/        
+			input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll			
+		}     
 	}
 }
 
@@ -257,12 +228,12 @@ def shallHide(myFeature) {
 def getDescription(dNumber) {	
     def descript = "Nothing Configured"
     def anySettings = settings.find{it.key.contains("_${dNumber}_")}
-    log.error anySettings
-    if(anySettings) descript = "PUSHED:\n"+getConfirmPage("${dNumber}_pushed")+"\nHELD:\n"+getConfirmPage("${dNumber}_held")//"CONFIGURED : Tap to edit"
+    if(anySettings) descript = "PUSHED:\n"+getDescDetails(dNumber,"_pushed")+"\nHELD:\n"+getDescDetails(dNumber,"_held")//"CONFIGURED : Tap to edit"
 	return descript
 }
 
-def getConfirmPage(numType){
+def getDescDetails(bNum, type){
+	def numType=bNum+type
 	def preferenceNames = settings.findAll{it.key.contains("_${numType}")}.sort()		//get all configured settings that: match button# and type, AND are not false
     if(!preferenceNames){
     	return "   **Not Configured**"
@@ -272,12 +243,13 @@ def getConfirmPage(numType){
     	preferenceNames.each {eachPref->		
         	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
         	def prefValue = eachPref.value												//name of device the action is being performed on (eg Bedroom Fan)
+            if (String.isCase(prefValue) ) prefValue = ""
             if(prefDetail.sub) {														//if a sub value is found (eg dimVal) prefix to prefValue
         		def PrefSubValue = settings[prefDetail.sub + numType]?:"!Missing!"		//value stored in val setting (eg 100)
                 //log.error eachPref.value
-        		if(PrefSubValue==true) prefValue = "(${prefValue})" else prefValue = "(${PrefSubValue}): ${prefValue}"
-            }              	
-        	formattedPage += "   "+prefDetail.desc+" "+prefValue+"\n"
+        		prefValue = "${PrefSubValue} : ${prefValue}"
+            }              	 
+        	formattedPage += "   "+prefDetail.desc+prefValue+"\n"
     	}
 		return formattedPage
     }
@@ -318,33 +290,32 @@ def defaultLabel() {
 
 def getPreferenceDetails(){
 	def detailMappings =
-    	[[id:'lights_',desc:'Toggle On/Off:',comm:toggle],
-         [id:'lightsDT_', desc:'Toggle Off/Dim to', comm:dimToggle, sub:"valDT"],
-     	 [id:'lightOn_',desc:'Turn On:',comm:turnOn],
-     	 [id:"lightOff_",desc:'Turn Off:',comm:turnOff],
-     	 [id:"lightDim_",desc:'Dim to',comm:turnDim, sub:"valLight"],
-     	 [id:"lightD2m_",desc:'Dim to',comm:turnDim, sub:"valLight2"],
+    	[[id:'lights_',desc:'Toggle On/Off: ',comm:toggle],
+         [id:'lightsDT_', desc:'Toggle Off/Dim to ', comm:dimToggle, sub:"valDT"],
+     	 [id:'lightOn_',desc:'Turn On : ',comm:turnOn],
+     	 [id:"lightOff_",desc:'Turn Off : ',comm:turnOff],
+     	 [id:"lightDim_",desc:'Dim to ',comm:turnDim, sub:"valLight"],
+     	 [id:"lightD2m_",desc:'Dim to ',comm:turnDim, sub:"valLight2"],
          [id:'dimPlus_',desc:'Brightness +',comm:levelUp, sub:"valDimP"],
      	 [id:'dimMinus_',desc:'Brightness -',comm:levelDown, sub:"valDimM"],
-     	 [id:"fanAdjust_",desc:'Adjust:',comm:adjustFan],
-     	 [id:"shadeAdjust_",desc:'Adjust:',comm:adjustShade],
-     	 [id:"locks_",desc:'UnLock:',comm:setUnlock],
-         [id:"speakerpp_",desc:'Toggle Play/Pause:',comm:speakerplaystate],
-         [id:'speakernt_',desc:'Next Track:',comm:speakernexttrack],
-    	 [id:'speakermu_',desc:'Mute:',comm:speakermute],
+     	 [id:"fanAdjust_",desc:'Adjust : ',comm:adjustFan],
+     	 [id:"shadeAdjust_",desc:'Adjust : ',comm:adjustShade],
+     	 [id:"locks_",desc:'UnLock : ',comm:setUnlock],
+         [id:"speakerpp_",desc:'Toggle Play/Pause : ',comm:speakerplaystate],
+         [id:'speakernt_',desc:'Next Track : ',comm:speakernexttrack],
+    	 [id:'speakermu_',desc:'Mute : ',comm:speakermute],
      	 [id:'speakervu_',desc:'Volume +',comm:levelUp, sub:"valSpeakU"],
      	 [id:"speakervd_",desc:'Volume -',comm:levelDown, sub:"valSpeakD"],
-     	 [id:"mode_",desc:'Set Mode:',comm:changeMode],
-         [id:"notifications_",desc:'InApp Msg',comm:messageHandle, sub: "valNotify"],
-         //[id:"notifications_",desc:'InApp Notify',comm:messageHandle, sub: "valText"],
-         [id:'sirens_',desc:'Toggle:',comm:toggle],
-     	 [id:"phone_",desc:'SMS Msg',comm:smsHandle, sub:"notifications_"],
-         //[id:"phone_",desc:'SMS Notify',comm:messageHandle, sub:"valText"],
-     	 [id:"phrase_",desc:'Run Routine:',comm:runRout],
+     	 [id:"mode_",desc:'Set Mode : ',comm:changeMode],
+         [id:"notifications_",desc:'Send Push Notification',comm:messageHandle],
+         [id:'sirens_',desc:'Toggle : ',comm:toggle],
+     	 [id:"phone_",desc:'Send SMS Notification',comm:smsHandle],
+     	 [id:"phrase_",desc:'Run Routine : ',comm:runRout],
         ]         
     return detailMappings
 }
-
+//, sub:"notifications_"
+//, sub: "valNotify"
 def buttonEvent(evt) {
 	if(allOk) {
     	def buttonNumber = evt.jsonData.buttonNumber
@@ -684,37 +655,3 @@ def getHomeSeerSpec(buttonNumber){
 		break
    	}        	
 }
-  
-//*/ ALTERNATIVE executeHandler code
-
-/*    
-    getButtonDetails().each{ //needs to be renamed to getPreff
-		def confSettings = settings["${it.id}${buttonNumber}_${value}"]		//return value of device to act on (eg bedroom lamp)
-        if(confSettings) {        
-        	if(it.sub) {	//if configuration found and has sub setting then do
-            	def confVal = settings["${it.sub}${buttonNumber}_${value}"]	//returns the value of the subsetting if it exists (eg. 100)
-    			"$it.comm"(confSettings,confVal)
-        	}
-        	else {
-            "$it.comm"(confSettings)	//if configuration exists with no sub value
-        	}
-		}
-	}
-*/
-
-/*////////////////////OLD BUTTON EVENT CODE THAT WAS REMOVED WHEN EXECUTEHANDLERS WAS MERGED WITH IT
-def buttonEvent(evt){
-	if(allOk) {
-    	def buttonNumber = evt.jsonData.buttonNumber
-		def pressType = evt.value
-		log.debug "$buttonDevice: Button $buttonNumber was $pressType"
-		//def recentEvents = buttonDevice.eventsSince(new Date(now() - 2000)).findAll{it.value == evt.value && it.data == evt.data}
-		//log.debug "Found ${recentEvents.size()?:0} events in past 2 seconds"	
-        //if(recentEvents.size <= 1){
-        	executeHandlers(buttonNumber, pressType)            
-		//} else {
-		//	log.debug "Found recent button press events for $buttonNumber with value $pressType"
-		//}
-	}
-}
-*/
