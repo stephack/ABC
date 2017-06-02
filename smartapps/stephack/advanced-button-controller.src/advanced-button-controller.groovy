@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170601"}
+def version(){"v0.1.170602"}
 
 definition(
     name: "Advanced Button Controller",
