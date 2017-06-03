@@ -609,4 +609,5 @@ def getSpecText(){
 			case 8: return "TBD"; break
         }    
     }
+    return "Not Specified By Device"
 }
