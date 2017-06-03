@@ -51,6 +51,7 @@ def parentPage() {
        		page: "aboutPage"
 		)		
    		}
+        remove("Uninstall ABC App","WARNING!!","This will remove the ENTIRE SmartApp, including all configs listed above.")
     }
 }
 
@@ -59,7 +60,7 @@ private def appName() { return "${parent ? "Button Map Config" : "Advanced Butto
 def mainPage() {
 	dynamicPage(name: "mainPage", install: true, uninstall: true) {
 		section("Step 1: Select Your Button Device") {
-			input "buttonDevice", "capability.button", title: "Button Controller", multiple: false, required: true, submitOnChange: true
+			input "buttonDevice", "capability.button", title: "Button Device", multiple: false, required: true, submitOnChange: true
 		}
         if(buttonDevice){
         	state.buttonType =  buttonDevice.typeName
@@ -208,7 +209,7 @@ def getButtonSections(buttonNumber) {
 				input "phrase_${buttonNumber}_pushed", "enum", title: "When Pushed", required: false, options: phrases, submitOnChange: collapseAll
 				if(showHeld()) input "phrase_${buttonNumber}_held", "enum", title: "When Held", required: false, options: phrases, submitOnChange: collapseAll
 			}
-		}
+		}        
         section("Notifications:\nSMS, In App or Both", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {
         paragraph "****************\nWHEN PUSHED\n****************"
 			input "notifications_${buttonNumber}_pushed", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
@@ -250,7 +251,7 @@ def getDescDetails(bNum, type){
     	preferenceNames.each {eachPref->		
         	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
         	def prefValue = eachPref.value												//name of device the action is being performed on (eg Bedroom Fan)
-            if (String.isCase(prefValue) ) prefValue = ""
+            if (String.isCase(prefValue)) prefValue = ""
             if(prefDetail.sub) {														//if a sub value is found (eg dimVal) prefix to prefValue
         		def PrefSubValue = settings[prefDetail.sub + numType]?:"!Missing!"		//value stored in val setting (eg 100)
                 //log.error eachPref.value
@@ -286,13 +287,12 @@ def initParent() {
 def initChild() {
 	log.debug "def INITIALIZE with settings: ${settings}"
 	app.label==app.name?app.updateLabel(defaultLabel()):app.updateLabel(app.label)
-    
 	subscribe(buttonDevice, "button", buttonEvent)
     state.lastshadesUp = true  
 }
 
 def defaultLabel() {
-	return "${buttonDevice} Config"
+	return "${buttonDevice} Controls"
 }
 
 def getPreferenceDetails(){
