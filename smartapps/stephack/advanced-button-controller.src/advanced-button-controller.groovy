@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170602"}
+def version(){"v0.1.170603"}
 
 definition(
     name: "Advanced Button Controller",
@@ -64,6 +64,7 @@ def mainPage() {
 		}
         if(buttonDevice){
         	state.buttonType =  buttonDevice.typeName
+            if(state.buttonType.contains("Aeon Minimote")) state.buttonType =  "Aeon Minimote"
             log.debug "Device Type is now set to: "+state.buttonType
             state.buttonCount = manualCount?: buttonDevice.currentValue('numberOfButtons')
             if(state.buttonCount==null) state.buttonCount = buttonDevice.currentValue('numButtons')	//added for kyse minimote(hopefully will be updated to correct attribute name)
@@ -82,9 +83,9 @@ def mainPage() {
         	label title: "Assign a name:", required: false
         }
         section("Advanced Config:", hideable: true, hidden: hideOptionsSection()) { 
-            	input "manualCount", "number", title: "How many Buttons on remote?", required: false, description: "Only set if DTH does not specify", submitOnChange: true
-                input "collapseAll", "bool", title: "Only show sections that have been configured?", defaultValue: "true"
-                input "hwSpecifics", "bool", title: "Include H/W specific details?", defaultValue: true, submitOnChange: true
+            	input "manualCount", "number", title: "Set/Override # of Buttons?", required: false, description: "Only set if DTH does not report", submitOnChange: true
+                input "collapseAll", "bool", title: "Collapse Unconfigured Sections?", defaultValue: "true"
+                input "hwSpecifics", "bool", title: "Hide H/W Specific Details?", defaultValue: false, submitOnChange: true
 			}
         section(title: "Only Execute When:", hideable: true, hidden: hideOptionsSection()) {
 			def timeLabel = timeIntervalLabel()
@@ -103,15 +104,15 @@ def configButtonsPage(params) {
 
 def aboutPage() {
 	dynamicPage(name: "aboutPage", title: none){
-     	section("User's Guide - Advanced Button Controller") {
-        	paragraph textHelp()
- 		}
+        textHelp()
 	}
 }
 
 def getButtonSections(buttonNumber) {
 	return {
-    	getButtonSpecifics(buttonNumber)
+        section(){//"Hardware specific info on button selection:") {  //gets header with special configuration info and icon
+			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${state.buttonType}${state.currentButton}.png", "${state.buttonType} - ${getSpecText()}"
+    	}
 		section("Switches (Toggle On/Off)", hideable: true, hidden: !shallHide("lights_${buttonNumber}")) {        
 			input "lights_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "lights_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
@@ -164,7 +165,7 @@ def getButtonSections(buttonNumber) {
 			input "shadeAdjust_${buttonNumber}_pushed", "capability.doorControl", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "shadeAdjust_${buttonNumber}_held", "capability.doorControl", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}
-		section("Locks (Lock Only)", hideable: true, hidden: !shallHide("locks_${buttonNumber}")) {
+		section("Locks (Unlock Only)", hideable: true, hidden: !shallHide("locks_${buttonNumber}")) {
 			input "locks_${buttonNumber}_pushed", "capability.lock", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "locks_${buttonNumber}_held", "capability.lock", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}
@@ -224,7 +225,7 @@ def getButtonSections(buttonNumber) {
 }
 
 def showHeld() {
-if(state.buttonType.contains("100+")) return false
+if(state.buttonType.contains("100+ ")) return false
 else return true
 }
 
@@ -321,8 +322,7 @@ def getPreferenceDetails(){
         ]         
     return detailMappings
 }
-//, sub:"notifications_"
-//, sub: "valNotify"
+
 def buttonEvent(evt) {
 	if(allOk) {
     	def buttonNumber = evt.jsonData.buttonNumber
@@ -513,92 +513,100 @@ private timeIntervalLabel() {
 
 private def textHelp() {
 	def text =
-	"This smartapp allows you to use a device with buttons including, but not limited to:\n\n  Aeon Labs Minimotes\n"+
-    "  HomeSeer HS-WD100+ switches**\n  HomeSeer HS-WS100+ switches\n  And now Lutron Picos***\n\n"+
-	"It is a modified version of @dalec's Button Controller Plus SmartApp which is in turn"+
-        " a version of @bravenel's Button Controller+ SmartApp.\n\n"+
-        "The original apps were hardcoded to allow configuring 4 or 6 button devices."+
+	section("User's Guide - Advanced Button Controller") {
+    	paragraph "This smartapp allows you to use a device with buttons including, but not limited to:\n\n  Aeon Labs Minimotes\n"+
+    	"  HomeSeer HS-WD100+ switches**\n  HomeSeer HS-WS100+ switches\n  Lutron Picos***\n\n"+
+		"It is a heavily modified version of @dalec's 'Button Controller Plus' which is in turn"+
+        " a version of @bravenel's 'Button Controller+'."
+   	}
+	section("Some of the included changes are:"){
+        paragraph "A complete revamp of the configuration flow. You can now tell at a glance, what has been configured for each button."+
+        "The button configuration page has been collapsed by default for easier navigation."
+        paragraph "The original apps were hardcoded to allow configuring 4 or 6 button devices."+
         " This app will automatically detect the number of buttons on your device or allow you to manually"+
-        " specify (only needed if device does not report on its own).\n\n"+
-	"This SmartApp also allows you to give your buton device full speaker control including: Play/Pause, NextTrack, Mute, VolumeUp/Down."+
-    "(***Standard Pico remotes can be converted to Audio Picos)\n\n"+
-        "The control options available are: \n"+
-        "	Switches - Toggle \n"+
+        " specify (only needed if device does not report on its own)."
+		paragraph "Allows you to give your buton device full speaker control including: Play/Pause, NextTrack, Mute, VolumeUp/Down."+
+    	"(***Standard Pico remotes can be converted to Audio Picos)\n\nThe additional control options have been highlighted below."
+	}
+	section("Available Control Options are:"){
+        paragraph "	Switches - Toggle \n"+
         "	Switches - Turn On \n"+
         "	Switches - Turn Off \n"+
         "	Dimmers - Toggle \n"+
         "	Dimmers - Set Level (Group 1) \n"+
         "	Dimmers - Set Level (Group 2) \n"+
-        "	Dimmers - Inc Level \n"+
-        "	Dimmers - Dec Level \n"+
+        "	*Dimmers - Inc Level \n"+
+        "	*Dimmers - Dec Level \n"+
         "	Fans - Low, Medium, High, Off \n"+
         "	Shades - Up, Down, or Stop \n"+
         "	Locks - Unlock Only \n"+
         "	Speaker - Play/Pause \n"+
-        "	Speaker - Next Track \n"+
-        "	Speaker - Mute/Unmute \n"+
-        "	Speaker - Volume Up \n"+
-        "	Speaker - Volume Down \n"+
+        "	*Speaker - Next Track \n"+
+        "	*Speaker - Mute/Unmute \n"+
+        "	*Speaker - Volume Up \n"+
+        "	*Speaker - Volume Down \n"+
         "	Set Modes \n"+
         "	Run Routines \n"+
         "	Sirens - Toggle \n"+
         "	Push Notifications \n"+
-        "	SMS Notifications \n\n"+
-	    "** Quirk for HS-WD100+ on 5/6 buttons:\n"+
-        "Because a dimmer switch already uses press&hold to manually set the dimming level"+
+        "	SMS Notifications"
+	}
+	section ("** Quirk for HS-WD100+ on Button 5 & 6:"){
+        paragraph "Because a dimmer switch already uses Press&Hold to manually set the dimming level"+
         " please be aware of this operational behavior. If you only want to manually change"+
-        " the dim level to the lights that are wired to the switch you will automatically"+
-        " trigger the 5/6 button event as well. And the same is true in reverse, if you"+ 
-        " only want to trigger a 5/6 button event action with press&hold you will manually"+
-        " be changing the dim level of the switch simultaneously as well.\n"+
-        "This quirk doesn't exist of course with the HS-HS100+ since it is not a dimmer.\n\n"+
-        "*** Please Note: Lutron Picos are not natively supported by SmartThings. A Lutron SmartBridge Pro, a device running @njschwartz's python script (or node.js) and the Lutron Caseta Service Manager"+
+        " the dim level to the lights that are wired to the switch, you will automatically"+
+        " trigger the 5/6 button event as well. And the same is true in reverse. If you"+ 
+        " only want to trigger a 5/6 button event action with Press&Hold, you will be manually"+
+        " changing the dim level of the switch simultaneously as well.\n"+
+        "This quirk doesn't exist of course with the HS-HS100+ since it is not a dimmer."
+	}
+	section("*** Lutron Pico Requirements:"){
+        paragraph "Lutron Picos are not natively supported by SmartThings. A Lutron SmartBridge Pro, a device running @njschwartz's python script (or node.js) and the Lutron Caseta Service Manager"+
     	" SmartApp are also required for this functionality!\nSearch the forums for details."
+	}
     
   }
   
-def getButtonSpecifics(buttonNumber) {
-	if(hwSpecifics== true && state.buttonType.contains("Lutron Pico")) getLutronSpec(buttonNumber)
-    if(hwSpecifics== true && (state.buttonType.contains("WD100+ Dimmer") || state.buttonType.contains("WS100+ Switch"))) getHomeSeerSpec(buttonNumber)
-	if(hwSpecifics== true && state.buttonType.contains("Aeon Minimote")) getAeonSpec(buttonNumber)
-}
-
-def getLutronSpec(buttonNumber) {
-	section(){//"Hardware specific info on button selection:") { 
-    switch (buttonNumber) {
-   	    case 1: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/pico1a.png", "Lutron Picos - Top Button"; break
-       	case 2: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/pico2a.png", "Lutron Picos - Bottom Button"; break
-      	case 3: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/pico3a.png", "Lutron Picos - Middle Button"; break
-       	case 4: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/pico4a.png", "Lutron Picos - Up Button"; break
-       	case 5: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/pico5a.png", "Lutron Picos - Down Button"; break
-        default: paragraph image: "", "Lutron Picos - NOT USED"; break
+def getSpecText(){
+	if(state.buttonType == "Lutron Pico") {
+    	switch (state.currentButton){
+        	case 1: return "Top Button"; break
+			case 2: return "Bottom Button"; break
+			case 3: return "Middle Button";break
+			case 4: return "Up Button"; break
+			case 5: return "Down Button"; break        
+        }    
     }
-	}
-}
-
-def getAeonSpec(buttonNumber){
-	section(){//"Hardware specific info on button selection:") {  
-    switch (buttonNumber) {
-   	    case 1: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/aeon1a.png", "Aeon Minimote - Top Left Button"; break
-        case 2: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/aeon2a.png", "Aeon Minimote - Top Right Button"; break
-        case 3: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/aeon3a.png", "Aeon Minimote - Lower Left Button"; break
-       	case 4: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/aeon4a.png", "Aeon Minimote - Lower Right"; break        
-        default: paragraph image: "", "Aeon - NOT USED"; break
-   	}
+	if(state.buttonType.contains("Aeon Minimote")) {
+    	switch (state.currentButton){
+        	case 1: return "Top Left Button"; break
+			case 2: return "Top Right Button"; break
+			case 3: return "Lower Left Button";break
+			case 4: return "Lower Right"; break
+        }    
     }
-}
-
-def getHomeSeerSpec(buttonNumber){
-	//def endTxt = "** Use [PUSHED] Only **"
-	section(){//"Hardware specific info on button selection:") { 
-	switch (buttonNumber) {
-   	    case 1: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/hs1.png", "WD100+ or WS100+\nDouble-Tap Upper Paddle"; break
-        case 2: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/hs2.png", "WD100+ or WS100+\nDouble-Tap Lower Paddle"; break
-        case 3: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/hs3.png", "WD100+ or WS100+\nTriple-Tap Upper Paddle"; break
-       	case 4: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/hs4.png", "WD100+ or WS100+\nTriple-Tap Lower Paddle"; break
-        case 5: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/hs5.png", "WS100+\n(See user guide for WD100+)\nPress & Hold Upper Paddle"; break
-       	case 6: paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/hs6.png", "WS100+\n(See user guide for WD100+)\nPress & Hold Lower Paddle"; break
-        default: paragraph image: "", "HomeSeer - NOT USED"; break
-   	}
+	if(state.buttonType.contains("WD100+ Dimmer")) {
+    	switch (state.currentButton){
+        	case 1: return "Double-Tap Upper Paddle"; break
+			case 2: return "Double-Tap Lower Paddle"; break
+			case 3: return "Triple-Tap Upper Paddle";break
+			case 4: return "Triple-Tap Lower Paddle"; break
+            case 5: return "Press & Hold Upper Paddle\n(See user guide for quirks)"; break
+			case 6: return "Press & Hold Lower Paddle\n(See user guide for quirks)"; break
+			case 7: return "TBD\n(See user guide for quirks)"; break
+			case 8: return "TBD\n(See user guide for quirks)"; break
+        }    
+    }
+    if(state.buttonType.contains("WS100+ Switch")) {
+    	switch (state.currentButton){
+        	case 1: return "Double-Tap Upper Paddle"; break
+			case 2: return "Double-Tap Lower Paddle"; break
+			case 3: return "Triple-Tap Upper Paddle";break
+			case 4: return "Triple-Tap Lower Paddle"; break
+            case 5: return "Press & Hold Upper Paddle"; break
+			case 6: return "Press & Hold Lower Paddle"; break
+			case 7: return "TBD";break
+			case 8: return "TBD"; break
+        }    
     }
 }
