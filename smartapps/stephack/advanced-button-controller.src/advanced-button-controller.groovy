@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170603"}
+def version(){"v0.1.170604"}
 
 definition(
     name: "Advanced Button Controller",
@@ -14,7 +14,8 @@ definition(
     category: "Convenience",
     iconUrl: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
     iconX2Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
-    iconX3Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png"
+    iconX3Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
+    singleInstance: true
 )
 
 preferences {
@@ -41,8 +42,8 @@ def startPage() {
 
 def parentPage() {
 	return dynamicPage(name: "parentPage", title: "", install: true, uninstall: true) {
-        section("Create a new button control mapping.") {
-            app(name: "childApps", appName: appName(), namespace: "stephack", title: "New Button Mapping", multiple: true)
+        section("Create a new button device mapping.") {
+            app(name: "childApps", appName: appName(), namespace: "stephack", title: "New Button Device Mapping", multiple: true)
         }
         section("Version Info, User's Guide") {
        	href (name: "aboutPage", title: "Advanced Button Controller \n"+version(), 
@@ -252,7 +253,7 @@ def getDescDetails(bNum, type){
     	preferenceNames.each {eachPref->		
         	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
         	def prefValue = eachPref.value												//name of device the action is being performed on (eg Bedroom Fan)
-            if (String.isCase(prefValue)) prefValue = ""
+            if (String.isCase(prefValue) && !eachPref.key.contains("phrase_")) prefValue = ""
             if(prefDetail.sub) {														//if a sub value is found (eg dimVal) prefix to prefValue
         		def PrefSubValue = settings[prefDetail.sub + numType]?:"!Missing!"		//value stored in val setting (eg 100)
                 //log.error eachPref.value
