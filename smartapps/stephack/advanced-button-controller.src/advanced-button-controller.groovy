@@ -283,7 +283,7 @@ def initChild() {
 }
 
 def defaultLabel() {
-	return "${buttonDevice} Controls"
+	return "${buttonDevice} Mapping"
 }
 
 def getPreferenceDetails(){
@@ -601,3 +601,24 @@ def getSpecText(){
     }
     return "Not Specified By Device"
 }
+
+
+/*FOR NEW INPUTS//////////////
+1. add input to config
+2. add info to detailMappings including subvalue if needed
+3. ensure correct type is used in map..or create a new one with its own formattedPage
+
+
+
+FOR NEW BUTTON DEVICE TYPES///////////////
+1. ensure device reports buttonNumber
+2. if not, add sendEvent to DTH as needed OR just enter manually
+3. add any special instructions to getSpecText() using dth name
+4. create pics for each button using dthName+dNumber
+
+
+
+
+
+
+*/
