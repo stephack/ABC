@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170604a"}
+def version(){"v0.1.170605"}
 
 definition(
     name: "Advanced Button Controller",
@@ -64,8 +64,10 @@ def mainPage() {
             if(state.buttonType.contains("Aeon Minimote")) state.buttonType =  "Aeon Minimote"
             log.debug "Device Type is now set to: "+state.buttonType
             state.buttonCount = manualCount?: buttonDevice.currentValue('numberOfButtons')
+            log.debug state.buttonCount
             if(state.buttonCount==null) state.buttonCount = buttonDevice.currentValue('numButtons')	//added for kyse minimote(hopefully will be updated to correct attribute name)
-       		section("Step 2: Configure Your Buttons"){
+       		log.info state.buttonCount
+            section("Step 2: Configure Your Buttons"){
             	if(state.buttonCount<1) {
                 	paragraph "The selected button device did not report the number of buttons it has. Please specify in the Advanced Config section below."
                 }
@@ -81,8 +83,8 @@ def mainPage() {
         }
         section("Advanced Config:", hideable: true, hidden: hideOptionsSection()) { 
             	input "manualCount", "number", title: "Set/Override # of Buttons?", required: false, description: "Only set if DTH does not report", submitOnChange: true
-                input "collapseAll", "bool", title: "Collapse Unconfigured Sections?", defaultValue: "true"
-                input "hwSpecifics", "bool", title: "Hide H/W Specific Details?", defaultValue: false, submitOnChange: true
+                input "collapseAll", "bool", title: "Collapse Unconfigured Sections?", defaultValue: true
+                input "hwSpecifics", "bool", title: "Hide H/W Specific Details?", defaultValue: false
 			}
         section(title: "Only Execute When:", hideable: true, hidden: hideOptionsSection()) {
 			def timeLabel = timeIntervalLabel()
@@ -107,8 +109,10 @@ def aboutPage() {
 
 def getButtonSections(buttonNumber) {
 	return {
+    	def picNameNoSpace = "${state.buttonType}${state.currentButton}.png"-" "
+        log.error picNameNoSpace
         section(){//"Hardware specific info on button selection:") {  //gets header with special configuration info and icon
-			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${state.buttonType}${state.currentButton}.png", "${state.buttonType} - ${getSpecText()}"
+			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${picNameNoSpace}", "${state.buttonType} - ${getSpecText()}"
     	}		
         section("Switches (Turn On)", hideable: true, hidden: !shallHide("lightOn_${buttonNumber}")) {
 			input "lightOn_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
