@@ -4,14 +4,14 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170605"}
+def version(){"v0.1.170608"}
 
 definition(
     name: "Advanced Button Controller",
     namespace: "stephack",
     author: "Bruce Ravenel, Dale Coffing, Stephan Hackett",
     description: "Configure devices with buttons like the Aeon Labs Minimote and Lutron Pico Remotes.",
-    category: "Convenience",
+    category: "My Apps",
     iconUrl: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
     iconX2Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
     iconX3Url: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png",
@@ -64,9 +64,7 @@ def mainPage() {
             if(state.buttonType.contains("Aeon Minimote")) state.buttonType =  "Aeon Minimote"
             log.debug "Device Type is now set to: "+state.buttonType
             state.buttonCount = manualCount?: buttonDevice.currentValue('numberOfButtons')
-            log.debug state.buttonCount
-            if(state.buttonCount==null) state.buttonCount = buttonDevice.currentValue('numButtons')	//added for kyse minimote(hopefully will be updated to correct attribute name)
-       		log.info state.buttonCount
+            //if(state.buttonCount==null) state.buttonCount = buttonDevice.currentValue('numButtons')	//added for kyse minimote(hopefully will be updated to correct attribute name)
             section("Step 2: Configure Your Buttons"){
             	if(state.buttonCount<1) {
                 	paragraph "The selected button device did not report the number of buttons it has. Please specify in the Advanced Config section below."
@@ -75,13 +73,13 @@ def mainPage() {
                 	for(i in 1..state.buttonCount){
                 		href "configButtonsPage", title: "Button ${i} - (Tap to Edit)", description: getDescription(i), params: [pbutton: i]
                     }
-            	}                
-            }            
-		}		        
+            	}
+            }
+		}
         section("Set Custom Name (Optional)") {
         	label title: "Assign a name:", required: false
         }
-        section("Advanced Config:", hideable: true, hidden: hideOptionsSection()) { 
+        section("Advanced Config:", hideable: true, hidden: hideOptionsSection()) {
             	input "manualCount", "number", title: "Set/Override # of Buttons?", required: false, description: "Only set if DTH does not report", submitOnChange: true
                 input "collapseAll", "bool", title: "Collapse Unconfigured Sections?", defaultValue: true
                 input "hwSpecifics", "bool", title: "Hide H/W Specific Details?", defaultValue: false
@@ -92,7 +90,7 @@ def mainPage() {
 			input "days", "enum", title: "Only on certain days of the week", multiple: true, required: false,
 					options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 			input "modes", "mode", title: "Only when mode is", multiple: true, required: false
-		}       
+		}
 	}
 }
 
@@ -110,10 +108,10 @@ def aboutPage() {
 def getButtonSections(buttonNumber) {
 	return {
     	def picNameNoSpace = "${state.buttonType}${state.currentButton}.png"-" "
-        log.error picNameNoSpace
-        section(){//"Hardware specific info on button selection:") {  //gets header with special configuration info and icon
+        //log.debug picNameNoSpace
+        section(){	//"Hardware specific info on button selection:") {
 			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${picNameNoSpace}", "${state.buttonType} - ${getSpecText()}"
-    	}		
+    	}
         section("Switches (Turn On)", hideable: true, hidden: !shallHide("lightOn_${buttonNumber}")) {
 			input "lightOn_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "lightOn_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
@@ -122,7 +120,7 @@ def getButtonSections(buttonNumber) {
 			input "lightOff_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "lightOff_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}
-        section("Switches (Toggle On/Off)", hideable: true, hidden: !shallHide("lights_${buttonNumber}")) {        
+        section("Switches (Toggle On/Off)", hideable: true, hidden: !shallHide("lights_${buttonNumber}")) {
 			input "lights_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "lights_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 		}
@@ -138,13 +136,13 @@ def getButtonSections(buttonNumber) {
 			input "valLight2${buttonNumber}_pushed", "number", title: "Bright Level", multiple: false, required: false, description: "0 to 100%"
 			if(showHeld()) input "lightD2m_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "valLight2${buttonNumber}_held", "number", title: "Bright Level", multiple: false, required: false, description: "0 to 100%"
-		}        
+		}
         section("Dimmers (Increase Level By)", hideable: true, hidden: !(shallHide("dimPlus_${buttonNumber}") || shallHide("valDimP${buttonNumber}"))) {
 			input "dimPlus_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
             input "valDimP${buttonNumber}_pushed", "number", title: "When Pushed Increase by", multiple: false, required: false, description: "0 to 15"
 			if(showHeld()) input "dimPlus_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
             if(showHeld()) input "valDimP${buttonNumber}_held", "number", title: "When Held Increase by", multiple: false, required: false, description: "0 to 15"
-		}        
+		}
           	section("Dimmers (Decrease Level By)", hideable: true, hidden: !(shallHide("dimMinus_${buttonNumber}") || shallHide("valDimM${buttonNumber}"))) {
 			input "dimMinus_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
             input "valDimM${buttonNumber}_pushed", "number", title: "When Pushed Decrease by", multiple: false, required: false, description: "0 to 15"
@@ -167,7 +165,7 @@ def getButtonSections(buttonNumber) {
             input "valSpeakU${buttonNumber}_pushed", "number", title: "When Pushed Increase by", multiple: false, required: false, description: "0 to 15"
 			if(showHeld()) input "speakervu_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
             if(showHeld()) input "valSpeakU${buttonNumber}_held", "number", title: "When Held Increase by", multiple: false, required: false, description: "0 to 15"
-		}        
+		}
         section("Speakers (Decrease Vol By)", hideable: true, hidden: !(shallHide("speakervd_${buttonNumber}") || shallHide("valSpeakD${buttonNumber}"))) {
 			input "speakervd_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
             input "valSpeakD${buttonNumber}_pushed", "number", title: "When Pushed Decrease by", multiple: false, required: false, description: "0 to 15"
@@ -177,20 +175,20 @@ def getButtonSections(buttonNumber) {
         section("Speakers (Go to Next Track)", hideable: true, hidden: !shallHide("speakernt_${buttonNumber}")) {
 			input "speakernt_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "speakernt_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}        
+		}
         section("Speakers (Toggle Mute/Unmute)", hideable: true, hidden: !shallHide("speakermu_${buttonNumber}")) {
 			input "speakermu_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "speakermu_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		} 
+		}
         section(" "){}
         section("Sirens (Toggle)", hideable: true, hidden: !shallHide("sirens_${buttonNumber}")) {
 			input "sirens_${buttonNumber}_pushed","capability.alarm" ,title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "sirens_${buttonNumber}_held", "capability.alarm", title: "When Held", multiple: true, required: false, submitOnChange: true
 		}
-        section("Locks (Unlock Only)", hideable: true, hidden: !shallHide("locks_${buttonNumber}")) {
+        section("Locks (Lock Only)", hideable: true, hidden: !shallHide("locks_${buttonNumber}")) {
 			input "locks_${buttonNumber}_pushed", "capability.lock", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "locks_${buttonNumber}_held", "capability.lock", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}        
+		}
 		section("Fans (Adjust - Low, Medium, High, Off)", hideable: true, hidden: !shallHide("fanAdjust_${buttonNumber}")) {
 			input "fanAdjust_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "fanAdjust_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
@@ -198,20 +196,20 @@ def getButtonSections(buttonNumber) {
 		section("Shades (Adjust - Up, Down, or Stop)", hideable: true, hidden: !shallHide("shadeAdjust_${buttonNumber}")) {
 			input "shadeAdjust_${buttonNumber}_pushed", "capability.doorControl", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
 			if(showHeld()) input "shadeAdjust_${buttonNumber}_held", "capability.doorControl", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}		               
+		}
         section(" "){}
 		section("Set Mode", hideable: true, hidden: !shallHide("mode_${buttonNumber}")) {
 			input "mode_${buttonNumber}_pushed", "mode", title: "When Pushed", required: false, submitOnChange: collapseAll
 			if(showHeld())input "mode_${buttonNumber}_held", "mode", title: "When Held", required: false, submitOnChange: collapseAll
 		}
 		def phrases = location.helloHome?.getPhrases()*.label
-		if (phrases) {		
+		if (phrases) {
         	section("Run Routine", hideable: true, hidden: !shallHide("phrase_${buttonNumber}")) {
 				//log.trace phrases
 				input "phrase_${buttonNumber}_pushed", "enum", title: "When Pushed", required: false, options: phrases, submitOnChange: collapseAll
 				if(showHeld()) input "phrase_${buttonNumber}_held", "enum", title: "When Held", required: false, options: phrases, submitOnChange: collapseAll
 			}
-		}        
+		}
         section("Notifications:\nSMS, In App or Both", hideable: true, hidden: !shallHide("notifications_${buttonNumber}")) {
         paragraph "****************\nWHEN PUSHED\n****************"
 			input "notifications_${buttonNumber}_pushed", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
@@ -221,7 +219,7 @@ def getButtonSections(buttonNumber) {
 			if(showHeld()) input "notifications_${buttonNumber}_held", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
 			if(showHeld()) input "phone_${buttonNumber}_held", "phone", title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
 			if(showHeld()) input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll			
-		}     
+		}
 	}
 }
 
@@ -235,7 +233,7 @@ def shallHide(myFeature) {
 	return true
 }
 
-def getDescription(dNumber) {	
+def getDescription(dNumber) {
     def descript = "Nothing Configured"
     def anySettings = settings.find{it.key.contains("_${dNumber}_")}
     if(anySettings) descript = "PUSHED:"+getDescDetails(dNumber,"_pushed")+"\n\nHELD:"+getDescDetails(dNumber,"_held")//"CONFIGURED : Tap to edit"
@@ -250,7 +248,7 @@ def getDescDetails(bNum, type){
     }
     else {
     	def formattedPage =""
-    	preferenceNames.each {eachPref->        	
+    	preferenceNames.each {eachPref->
         	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
         	def prefDevice = " : ${eachPref.value}" - "[" - "]"											//name of device the action is being performed on (eg Bedroom Fan)
             def prefSubValue = settings[prefDetail.sub + numType]?:"(!Missing!)"
@@ -272,7 +270,7 @@ def updated() {
 }
 
 def initialize() {
-    parent ? initChild() : initParent()  
+    parent ? initChild() : initParent()
 }
 
 def initParent() {
@@ -280,10 +278,10 @@ def initParent() {
 }
 
 def initChild() {
-	log.debug "def INITIALIZE with settings: ${settings}"
+	log.debug "INITIALIZED with settings: ${settings}"
 	app.label==app.name?app.updateLabel(defaultLabel()):app.updateLabel(app.label)
 	subscribe(buttonDevice, "button", buttonEvent)
-    state.lastshadesUp = true  
+    state.lastshadesUp = true
 }
 
 def defaultLabel() {
@@ -302,7 +300,7 @@ def getPreferenceDetails(){
      	 [id:'dimMinus_',desc:'Brightness -',comm:levelDown, sub:"valDimM", type:"hasSub"],
      	 [id:"fanAdjust_",desc:'Adjust',comm:adjustFan, type:"normal"],
      	 [id:"shadeAdjust_",desc:'Adjust',comm:adjustShade, type:"normal"],
-     	 [id:"locks_",desc:'UnLock',comm:setUnlock, type:"normal"],
+     	 [id:"locks_",desc:'Lock',comm:setUnlock, type:"normal"],
          [id:"speakerpp_",desc:'Toggle Play/Pause',comm:speakerplaystate, type:"normal"],
          [id:'speakernt_',desc:'Next Track',comm:speakernexttrack, type:"normal"],
     	 [id:'speakermu_',desc:'Mute',comm:speakermute, type:"normal"],
@@ -313,7 +311,7 @@ def getPreferenceDetails(){
          [id:'sirens_',desc:'Toggle',comm:toggle, type:"normal"],
      	 [id:"phone_",desc:'Send SMS',comm:smsHandle, type:"normal"],
      	 [id:"phrase_",desc:'Run Routine',comm:runRout, type:"normal"],
-        ]         
+        ]
     return detailMappings
 }
 
@@ -322,7 +320,6 @@ def buttonEvent(evt) {
     	def buttonNumber = evt.jsonData.buttonNumber
 		def pressType = evt.value
 		log.debug "$buttonDevice: Button $buttonNumber was $pressType"
-    
     	def preferenceNames = settings.findAll{it.key.contains("_${buttonNumber}_${pressType}")}
     	preferenceNames.each{eachPref->
         	def prefDetail = getPreferenceDetails()?.find{eachPref.key.contains(it.id)}		//returns the detail map of id,desc,comm,sub
@@ -349,7 +346,7 @@ def turnDim(devices, level) {
 }
 
 def adjustFan(device) {
-	log.debug "Adjusting: $device"    
+	log.debug "Adjusting: $device"
 	def currentLevel = device.currentLevel
 	if(device.currentSwitch == 'off') device.setLevel(15)
 	else if (currentLevel < 34) device.setLevel(50)
@@ -358,7 +355,7 @@ def adjustFan(device) {
 }
 
 def adjustShade(device) {
-	log.debug "shades: $device = ${device.currentMotor} state.lastUP = $state.lastshadesUp"
+	log.debug "Shades: $device = ${device.currentMotor} state.lastUP = $state.lastshadesUp"
 	if(device.currentMotor in ["up","down"]) {
     	state.lastshadesUp = device.currentMotor == "up"
     	device.stop()
@@ -391,7 +388,7 @@ def levelUp(device, inclevel) {
     def newVol = currentVol + inclevel
   	device.setLevel(newVol)
     log.debug "Level increased by $inclevel to $newVol"
-} 
+}
 
 def levelDown(device, declevel) {
 	log.debug "Decrementing Level (by -declevel: $device"
@@ -399,11 +396,11 @@ def levelDown(device, declevel) {
     def newVol = currentVol.toInteger()-declevel
   	device.setLevel(newVol)
     log.debug "Level decreased by $declevel to $newVol"
-} 
+}
 
 def setUnlock(devices) {
-	log.debug "Unlocking: $devices"
-	devices.unlock()
+	log.debug "Locking: $devices"
+	devices.lock()
 }
 
 def toggle(devices) {
@@ -558,8 +555,7 @@ private def textHelp() {
         paragraph "Lutron Picos are not natively supported by SmartThings. A Lutron SmartBridge Pro, a device running @njschwartz's python script (or node.js) and the Lutron Caseta Service Manager"+
     	" SmartApp are also required for this functionality!\nSearch the forums for details."
 	}
-    
-  }
+}
   
 def getSpecText(){
 	if(state.buttonType == "Lutron Pico") {
@@ -569,7 +565,7 @@ def getSpecText(){
 			case 3: return "Middle Button";break
 			case 4: return "Up Button"; break
 			case 5: return "Down Button"; break        
-        }    
+        }
     }
 	if(state.buttonType.contains("Aeon Minimote")) {
     	switch (state.currentButton){
@@ -577,7 +573,7 @@ def getSpecText(){
 			case 2: return "Top Right Button"; break
 			case 3: return "Lower Left Button";break
 			case 4: return "Lower Right"; break
-        }    
+        }
     }
 	if(state.buttonType.contains("WD100+ Dimmer")) {
     	switch (state.currentButton){
@@ -589,7 +585,7 @@ def getSpecText(){
 			case 6: return "Press & Hold Lower Paddle\n(See user guide for quirks)"; break
 			case 7: return "TBD\n(See user guide for quirks)"; break
 			case 8: return "TBD\n(See user guide for quirks)"; break
-        }    
+        }
     }
     if(state.buttonType.contains("WS100+ Switch")) {
     	switch (state.currentButton){
@@ -601,7 +597,7 @@ def getSpecText(){
 			case 6: return "Press & Hold Lower Paddle"; break
 			case 7: return "TBD";break
 			case 8: return "TBD"; break
-        }    
+        }
     }
     return "Not Specified By Device"
 }
