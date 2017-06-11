@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170608"}
+def version(){"v0.1.170611"}
 
 definition(
     name: "Advanced Button Controller",
@@ -583,8 +583,8 @@ def getSpecText(){
 			case 4: return "Triple-Tap Lower Paddle"; break
             case 5: return "Press & Hold Upper Paddle\n(See user guide for quirks)"; break
 			case 6: return "Press & Hold Lower Paddle\n(See user guide for quirks)"; break
-			case 7: return "TBD\n(See user guide for quirks)"; break
-			case 8: return "TBD\n(See user guide for quirks)"; break
+			case 7: return "Single Tap Upper Paddle\n(See user guide for quirks)"; break
+			case 8: return "Single Tap Lower Paddle\n(See user guide for quirks)"; break
         }
     }
     if(state.buttonType.contains("WS100+ Switch")) {
@@ -595,8 +595,8 @@ def getSpecText(){
 			case 4: return "Triple-Tap Lower Paddle"; break
             case 5: return "Press & Hold Upper Paddle"; break
 			case 6: return "Press & Hold Lower Paddle"; break
-			case 7: return "TBD";break
-			case 8: return "TBD"; break
+			case 7: return "Single Tap Upper Paddle";break
+			case 8: return "Single Tap Lower Paddle"; break
         }
     }
     return "Not Specified By Device"
