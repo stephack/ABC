@@ -44,7 +44,7 @@ def parentPage() {
         section("Version Info, User's Guide") {
        	href (name: "aboutPage", title: "Advanced Button Controller \n"+version(), 
        		description: "Tap to get Smartapp Info and User's Guide.",
-       		image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abcNew.png", required: false,
+       		image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc_${version()}.png", required: false,
        		page: "aboutPage"
 		)		
    		}
