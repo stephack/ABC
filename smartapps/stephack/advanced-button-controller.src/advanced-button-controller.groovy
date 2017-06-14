@@ -4,7 +4,7 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  *
  */
-def version(){"v0.1.170611"}
+def version(){"v0.1.170614"}
 
 definition(
     name: "Advanced Button Controller",
@@ -44,12 +44,30 @@ def parentPage() {
         section("Version Info, User's Guide") {
        	href (name: "aboutPage", title: "Advanced Button Controller \n"+version(), 
        		description: "Tap to get Smartapp Info and User's Guide.",
-       		image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc_${version()}.png", required: false,
+       		image: verImgCheck(), required: false, // check repo for image that matches current version. Displays update icon if missing
        		page: "aboutPage"
 		)		
    		}
         remove("Uninstall ABC App","WARNING!!","This will remove the ENTIRE SmartApp, including all configs listed above.")
     }
+}
+
+def verImgCheck(){
+	def params = [
+    	uri: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc_${version()}.png",
+	]
+	try {
+   		httpGet(params) { resp ->
+        	resp.headers.each {
+           	//log.debug "${it.name} : ${it.value}"
+        	}
+            log.debug "ABC appears to be running the latest Version"
+        	return params.uri
+    	}
+	} catch (e) {
+    	log.error "ABC does not appear to be the latest version: Please update from IDE"
+    	return "https://cdn.rawgit.com/stephack/ABC/master/resources/images/update.png"
+	}
 }
 
 private def appName() { return "${parent ? "Button Map Config" : "Advanced Button Controller"}" }
