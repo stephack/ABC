@@ -2,9 +2,11 @@
  *	Advanced Button Controller
  *
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
+ * 
  *
+ * ver620 - fixed missing subs for notifications
  */
-def version(){"v0.1.170614"}
+def version(){"v0.1.170620"}
 
 definition(
     name: "Advanced Button Controller",
@@ -325,9 +327,9 @@ def getPreferenceDetails(){
      	 [id:'speakervu_',desc:'Volume +',comm:levelUp, sub:"valSpeakU", type:"hasSub"],
      	 [id:"speakervd_",desc:'Volume -',comm:levelDown, sub:"valSpeakD", type:"hasSub"],
      	 [id:"mode_",desc:'Set Mode',comm:changeMode, type:"normal"],
-         [id:"notifications_",desc:'Send Push Notification',comm:messageHandle, type:"bool"],
+         [id:"notifications_",desc:'Send Push Notification',comm:messageHandle, sub:"valNotify", type:"bool"],
          [id:'sirens_',desc:'Toggle',comm:toggle, type:"normal"],
-     	 [id:"phone_",desc:'Send SMS',comm:smsHandle, type:"normal"],
+     	 [id:"phone_",desc:'Send SMS',comm:smsHandle, sub:"notifications_", type:"normal"],
      	 [id:"phrase_",desc:'Run Routine',comm:runRout, type:"normal"],
         ]
     return detailMappings
