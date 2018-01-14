@@ -4,10 +4,10 @@
  *	Author: Stephan Hackett
  * 
  *
- * ver0620 - fixed missing subs for notifications
- * ver0107 - split smartApp into Parent/Child (IOS hanging on intial startup) - requires complete uninstall and reinstall of Parent and child SmartApps
+ * 6/20/17 - fixed missing subs for notifications
+ * 1/07/18 - split smartApp into Parent/Child (IOS hanging on intial startup) - requires complete uninstall and reinstall of Parent and child SmartApps
+ * 1/14/18 - updated version check code
  */
-def version(){"v0.2.180109"}
 
 definition(
     name: "ABC Manager",
@@ -29,13 +29,14 @@ preferences {
 
 def mainPage() {
 	return dynamicPage(name: "mainPage", title: "", install: true, uninstall: true) {
+    	def childVer = getAllChildApps().first().version()
         section("Create a new button device mapping.") {
             app(name: "childApps", appName: "ABC Child Creator", namespace: "stephack", title: "New Button Device Mapping", multiple: true)
         }
         section("Version Info, User's Guide") {
-       	href (name: "aboutPage", title: "Advanced Button Controller \n"+version(), 
+       	href (name: "aboutPage", title: "Advanced Button Controller \n"+childVer, 
        		description: "Tap to get Smartapp Info and User's Guide.",
-       		image: verImgCheck(), required: false, // check repo for image that matches current version. Displays update icon if missing
+       		image: verImgCheck(childVer), required: false, // check repo for image that matches current version. Displays update icon if missing
        		page: "aboutPage"
 		)		
    		}
@@ -43,9 +44,9 @@ def mainPage() {
     }
 }
 
-def verImgCheck(){
+def verImgCheck(childVer){
 	def params = [
-    	uri: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc_${version()}.png",
+    	uri: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/abc_${childVer}.png",
 	]
 	try {
    		httpGet(params) { resp ->

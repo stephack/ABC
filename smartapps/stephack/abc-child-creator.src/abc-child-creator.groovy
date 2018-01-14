@@ -5,10 +5,12 @@
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
  * 
  *
- * ver620 - fixed missing subs for notifications
+ * 6/20/17 - fixed missing subs for notifications
+ * 1/14/18 - updated Version check code
  *
  *	DO NOT PUBLISH !!!!
  */
+def version(){"v0.2.180114"}
 
 definition(
     name: "ABC Child Creator",
@@ -193,12 +195,23 @@ def getButtonSections(buttonNumber) {
 			if(showHeld()) input "phone_${buttonNumber}_held", "phone", title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
 			if(showHeld()) input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll			
 		}
+        if(enableSpec()){
+        	section(" "){}
+			section("Special", hideable: true, hidden: !shallHide("container_${buttonNumber}")) {
+				input "container_${buttonNumber}_pushed", "device.VirtualContainer", title: "When Pushed", required: false, submitOnChange: collapseAll
+				if(showHeld())input "container_${buttonNumber}_held", "device.VirtualContainer", title: "When Held", required: false, submitOnChange: collapseAll
+			}
+        }
 	}
 }
 
+def enableSpec() {
+	return false
+}
+
 def showHeld() {
-if(state.buttonType.contains("100+ ")) return false
-else return true
+	if(state.buttonType.contains("100+ ")) return false
+	else return true
 }
 
 def shallHide(myFeature) {
@@ -276,6 +289,7 @@ def getPreferenceDetails(){
          [id:'sirens_',desc:'Toggle',comm:toggle, type:"normal"],
      	 [id:"phone_",desc:'Send SMS',comm:smsHandle, sub:"notifications_", type:"normal"],
      	 [id:"phrase_",desc:'Run Routine',comm:runRout, type:"normal"],
+         [id:"container_",desc:'Cycle Playlist',comm:cyclePL, type:"normal"],         
         ]
     return detailMappings
 }
@@ -410,6 +424,14 @@ def smsHandle(phone, msg){
 def changeMode(mode) {
 	log.debug "Changing Mode to: $mode"
 	if (location.mode != mode && location.modes?.find { it.name == mode }) setLocationMode(mode)
+}
+
+def cyclePL(device) {
+	//int currPL = device.currentValue('lastRun')
+   // int nextPL = currPL+1
+    device.cycleChild()
+    //device.on(nextPL)
+
 }
 
 // execution filter methods
