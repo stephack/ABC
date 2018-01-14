@@ -1,4 +1,4 @@
-/*
+/*	Original Version (Deprecated)
  *	Advanced Button Controller
  *
  *	Author: SmartThings, modified by Bruce Ravenel, Dale Coffing, Stephan Hackett
@@ -525,7 +525,8 @@ private timeIntervalLabel() {
 private def textHelp() {
 	def text =
 	section("User's Guide - Advanced Button Controller") {
-    	paragraph "This smartapp allows you to use a device with buttons including, but not limited to:\n\n  Aeon Labs Minimotes\n"+
+    	paragraph "This version has been deprecated due to ST app updates. It is still fully functional but not recommended\n"+
+	"This smartapp allows you to use a device with buttons including, but not limited to:\n\n  Aeon Labs Minimotes\n"+
     	"  HomeSeer HS-WD100+ switches**\n  HomeSeer HS-WS100+ switches\n  Lutron Picos***\n\n"+
 		"It is a heavily modified version of @dalec's 'Button Controller Plus' which is in turn"+
         " a version of @bravenel's 'Button Controller+'."
