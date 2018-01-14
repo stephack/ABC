@@ -6,7 +6,7 @@
  *
  * 6/20/17 - fixed missing subs for notifications
  * 1/07/18 - split smartApp into Parent/Child (IOS hanging on intial startup) - requires complete uninstall and reinstall of Parent and child SmartApps
- * 1/14/18 - updated version check code
+ * 1/14/18a - updated version check code
  */
 
 definition(
@@ -29,7 +29,11 @@ preferences {
 
 def mainPage() {
 	return dynamicPage(name: "mainPage", title: "", install: true, uninstall: true) {
-    	def childVer = getAllChildApps().first().version()
+    	def childApps = getAllChildApps()
+        def childVer = "InitialSetup"
+        if(childApps.size() > 0) {
+        	childVer = childApps.first().version()
+        }
         section("Create a new button device mapping.") {
             app(name: "childApps", appName: "ABC Child Creator", namespace: "stephack", title: "New Button Device Mapping", multiple: true)
         }
