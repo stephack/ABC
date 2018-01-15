@@ -7,10 +7,12 @@
  *
  * 6/20/17 - fixed missing subs for notifications
  * 1/14/18 - updated Version check code
+ * 1/15/18 - added icon support for Inovelli Switches (NZW30S and NZW31S)
+ *		   - small adjustments to "Configure Button" page layout
  *
  *	DO NOT PUBLISH !!!!
  */
-def version(){"v0.2.180114"}
+def version(){"v0.2.180115"}
 
 definition(
     name: "ABC Child Creator",
@@ -77,15 +79,15 @@ def chooseButton() {
 
 def configButtonsPage(params) {
 	if (params.pbutton != null) state.currentButton = params.pbutton.toInteger()
-	dynamicPage(name: "configButtonsPage", title: "Configure Button ${state.currentButton} below", getButtonSections(state.currentButton))
+	dynamicPage(name: "configButtonsPage", title: "CONFIGURE BUTTON ${state.currentButton}:\n${state.buttonType}", getButtonSections(state.currentButton))
 }
 
 def getButtonSections(buttonNumber) {
 	return {
-    	def picNameNoSpace = "${state.buttonType}${state.currentButton}.png"-" "
+    	def picNameNoSpace = "${state.buttonType}${state.currentButton}.png"-" "-" "-" "-"/"
         //log.debug picNameNoSpace
         section(){	//"Hardware specific info on button selection:") {
-			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${picNameNoSpace}", "${state.buttonType} - ${getSpecText()}"
+			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${picNameNoSpace}", "${getSpecText()}"
     	}
         section("Switches (Turn On)", hideable: true, hidden: !shallHide("lightOn_${buttonNumber}")) {
 			input "lightOn_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
@@ -584,6 +586,16 @@ def getSpecText(){
 			case 6: return "Press & Hold Lower Paddle"; break
 			case 7: return "Single Tap Upper Paddle";break
 			case 8: return "Single Tap Lower Paddle"; break
+        }
+    }
+    if(state.buttonType.contains("Inovelli")) {
+    	switch (state.currentButton){
+        	case 1: return "NOT OPERATIONAL - DO NOT USE"; break
+        	case 2: return "2X Tap Upper Paddle = Pushed\n2X Tap Lower Paddle = Held"; break
+			case 3: return "3X Tap Upper Paddle = Pushed\n3X Tap Lower Paddle = Held"; break
+			case 4: return "4X Tap Upper Paddle = Pushed\n4X Tap Lower Paddle = Held";break
+			case 5: return "5X Tap Upper Paddle = Pushed\n5X Tap Lower Paddle = Held"; break
+            case 6: return "Hold Upper Paddle = Pushed\nHold Lower Paddle = Held"; break
         }
     }
     return "Not Specified By Device"
