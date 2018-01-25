@@ -79,6 +79,12 @@ def initialize() {
 
 }
 
+def aboutPage() {
+	dynamicPage(name: "aboutPage", title: none){
+        textHelp()
+	}
+}
+
 private def textHelp() {
 	def text =
 	section("User's Guide - Advanced Button Controller") {
