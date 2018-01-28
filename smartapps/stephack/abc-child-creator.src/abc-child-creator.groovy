@@ -9,10 +9,11 @@
  * 1/14/18 - updated Version check code
  * 1/15/18 - added icon support for Inovelli Switches (NZW30S and NZW31S)
  *		   - small adjustments to "Configure Button" page layout
+ * 1/28/18 - Added Icons and details for Remotec ZRC-90US Button Controller.
  *
  *	DO NOT PUBLISH !!!!
  */
-def version(){"v0.2.180115"}
+def version(){"v0.2.180128"}
 
 definition(
     name: "ABC Child Creator",
@@ -84,7 +85,7 @@ def configButtonsPage(params) {
 
 def getButtonSections(buttonNumber) {
 	return {
-    	def picNameNoSpace = "${state.buttonType}${state.currentButton}.png"-" "-" "-" "-"/"
+    	def picNameNoSpace = "${state.buttonType}${state.currentButton}.png"-" "-" "-" "-"/"-"-"
         //log.debug picNameNoSpace
         section(){	//"Hardware specific info on button selection:") {
 			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${picNameNoSpace}", "${getSpecText()}"
@@ -596,6 +597,26 @@ def getSpecText(){
 			case 4: return "4X Tap Upper Paddle = Pushed\n4X Tap Lower Paddle = Held";break
 			case 5: return "5X Tap Upper Paddle = Pushed\n5X Tap Lower Paddle = Held"; break
             case 6: return "Hold Upper Paddle = Pushed\nHold Lower Paddle = Held"; break
+        }
+    }
+    if(state.buttonType.contains("ZRC-90")) {
+    	switch (state.currentButton){
+        	case 1: return "Tap or Hold Button 1"; break
+        	case 2: return "Tap or Hold Button 2"; break
+			case 3: return "Tap or Hold Button 3"; break
+			case 4: return "Tap or Hold Button 4";break
+			case 5: return "Tap or Hold Button 5"; break
+            case 6: return "Tap or Hold Button 6"; break
+            case 7: return "Tap or Hold Button 7"; break
+        	case 8: return "Tap or Hold Button 8"; break
+			case 9: return "2X Tap Button 1\nHold Not Available"; break
+			case 10: return "2X Tap Button 2\nHold Not Available";break
+			case 11: return "2X Tap Button 3\nHold Not Available"; break
+            case 12: return "2X Tap Button 4\nHold Not Available"; break
+            case 13: return "2X Tap Button 5\nHold Not Available"; break
+        	case 14: return "2X Tap Button 6\nHold Not Available"; break
+			case 15: return "2X Tap Button 7\nHold Not Available"; break
+			case 16: return "2X Tap Button 8\nHold Not Available";break			
         }
     }
     return "Not Specified By Device"
