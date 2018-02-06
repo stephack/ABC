@@ -258,6 +258,8 @@ def initialize() {
     log.debug "INITIALIZED with settings: ${settings}"
 	app.label==app.name?app.updateLabel(defaultLabel()):app.updateLabel(app.label)
 	subscribe(buttonDevice, "pushed", buttonEvent)
+	subscribe(buttonDevice, "held", buttonEvent)
+	subscribe(buttonDevice, "doubleTapped", buttonEvent)
     state.lastshadesUp = true
 }
 
