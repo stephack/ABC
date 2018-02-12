@@ -10,10 +10,15 @@
  * 1/15/18 - added icon support for Inovelli Switches (NZW30S and NZW31S)
  *		   - small adjustments to "Configure Button" page layout
  * 1/28/18 - Added Icons and details for Remotec ZRC-90US Button Controller.
+ * 2/08/18 - reformatted Button Config Preview
+ * 2/12/18 - re-did getDescription() to only diplay Pushed/Held preview if it exists
+ *			restructured detailsMap and button config build for easy editting
+ *			made subValue inputs "hidden" and "required" when appropriate
+ *
  *
  *	DO NOT PUBLISH !!!!
  */
-def version(){"v0.2.180128"}
+def version(){"v0.2.180212"}
 
 definition(
     name: "ABC Child Creator",
@@ -55,7 +60,7 @@ def chooseButton() {
                 }
                 else {
                 	for(i in 1..state.buttonCount){
-                		href "configButtonsPage", title: "Button ${i} - (Tap to Edit)", description: getDescription(i), params: [pbutton: i]
+                		href "configButtonsPage", title: "Button ${i}", state: getDescription(i)!="Tap to configure"? "complete": null, description: getDescription(i), params: [pbutton: i]
                     }
             	}
             }
@@ -90,92 +95,17 @@ def getButtonSections(buttonNumber) {
         section(){	//"Hardware specific info on button selection:") {
 			if(hwSpecifics== false) paragraph image: "https://cdn.rawgit.com/stephack/ABC/master/resources/images/${picNameNoSpace}", "${getSpecText()}"
     	}
-        section("Switches (Turn On)", hideable: true, hidden: !shallHide("lightOn_${buttonNumber}")) {
-			input "lightOn_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "lightOn_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-		section("Switches (Turn Off)", hideable: true, hidden: !shallHide("lightOff_${buttonNumber}")) {
-			input "lightOff_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "lightOff_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-        section("Switches (Toggle On/Off)", hideable: true, hidden: !shallHide("lights_${buttonNumber}")) {
-			input "lights_${buttonNumber}_pushed", "capability.switch", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "lights_${buttonNumber}_held", "capability.switch", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-		section(" "){}
-		section("Dimmers (On to Level - Group 1)", hideable: true, hidden: !(shallHide("lightDim_${buttonNumber}") || shallHide("valLight${buttonNumber}"))) {
-			input "lightDim_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			input "valLight${buttonNumber}_pushed", "number", title: "Bright Level", multiple: false, required: false, description: "0 to 100%"
-			if(showHeld()) input "lightDim_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "valLight${buttonNumber}_held", "number", title: "Bright Level", multiple: false, required: false, description: "0 to 100%"
-		}
-		section("Dimmers (On to Level - Group 2)", hideable: true, hidden: !(shallHide("lightD2m_${buttonNumber}") || shallHide("valLight2${buttonNumber}"))) {
-			input "lightD2m_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			input "valLight2${buttonNumber}_pushed", "number", title: "Bright Level", multiple: false, required: false, description: "0 to 100%"
-			if(showHeld()) input "lightD2m_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "valLight2${buttonNumber}_held", "number", title: "Bright Level", multiple: false, required: false, description: "0 to 100%"
-		}
-        section("Dimmers (Increase Level By)", hideable: true, hidden: !(shallHide("dimPlus_${buttonNumber}") || shallHide("valDimP${buttonNumber}"))) {
-			input "dimPlus_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-            input "valDimP${buttonNumber}_pushed", "number", title: "When Pushed Increase by", multiple: false, required: false, description: "0 to 15"
-			if(showHeld()) input "dimPlus_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-            if(showHeld()) input "valDimP${buttonNumber}_held", "number", title: "When Held Increase by", multiple: false, required: false, description: "0 to 15"
-		}
-          	section("Dimmers (Decrease Level By)", hideable: true, hidden: !(shallHide("dimMinus_${buttonNumber}") || shallHide("valDimM${buttonNumber}"))) {
-			input "dimMinus_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-            input "valDimM${buttonNumber}_pushed", "number", title: "When Pushed Decrease by", multiple: false, required: false, description: "0 to 15"
-			if(showHeld()) input "dimMinus_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-            if(showHeld()) input "valDimM${buttonNumber}_held", "number", title: "When Held Decrease by", multiple: false, required: false, description: "0 to 15"
-		}
-        section("Dimmers (Toggle OnToLevel/Off)", hideable: true, hidden: !(shallHide("lightsDT_${buttonNumber}") || shallHide("valDT${buttonNumber}"))) {
-			input "lightsDT_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			input "valDT${buttonNumber}_pushed", "number", title: "Bright Level", required: false, description: "0 to 100%"
-			if(showHeld()) input "lightsDT_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "valDT${buttonNumber}_held", "number", title: "Bright Level", required: false, description: "0 to 100%"
-		}
-        section(" "){}
-		section("Speakers (Toggle Play/Pause)", hideable: true, hidden: !shallHide("speakerpp_${buttonNumber}")) {
-			input "speakerpp_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "speakerpp_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-        section("Speakers (Increase Vol By)", hideable: true, hidden: !(shallHide("speakervu_${buttonNumber}") || shallHide("valSpeakU${buttonNumber}"))) {
-			input "speakervu_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-            input "valSpeakU${buttonNumber}_pushed", "number", title: "When Pushed Increase by", multiple: false, required: false, description: "0 to 15"
-			if(showHeld()) input "speakervu_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-            if(showHeld()) input "valSpeakU${buttonNumber}_held", "number", title: "When Held Increase by", multiple: false, required: false, description: "0 to 15"
-		}
-        section("Speakers (Decrease Vol By)", hideable: true, hidden: !(shallHide("speakervd_${buttonNumber}") || shallHide("valSpeakD${buttonNumber}"))) {
-			input "speakervd_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-            input "valSpeakD${buttonNumber}_pushed", "number", title: "When Pushed Decrease by", multiple: false, required: false, description: "0 to 15"
-			if(showHeld())input "speakervd_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-            if(showHeld())input "valSpeakD${buttonNumber}_held", "number", title: "When Held Decrease by", multiple: false, required: false, description: "0 to 15"
-		}
-        section("Speakers (Go to Next Track)", hideable: true, hidden: !shallHide("speakernt_${buttonNumber}")) {
-			input "speakernt_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "speakernt_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-        section("Speakers (Toggle Mute/Unmute)", hideable: true, hidden: !shallHide("speakermu_${buttonNumber}")) {
-			input "speakermu_${buttonNumber}_pushed", "capability.musicPlayer", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "speakermu_${buttonNumber}_held", "capability.musicPlayer", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-        section(" "){}
-        section("Sirens (Toggle)", hideable: true, hidden: !shallHide("sirens_${buttonNumber}")) {
-			input "sirens_${buttonNumber}_pushed","capability.alarm" ,title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "sirens_${buttonNumber}_held", "capability.alarm", title: "When Held", multiple: true, required: false, submitOnChange: true
-		}
-        section("Locks (Lock Only)", hideable: true, hidden: !shallHide("locks_${buttonNumber}")) {
-			input "locks_${buttonNumber}_pushed", "capability.lock", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "locks_${buttonNumber}_held", "capability.lock", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-		section("Fans (Adjust - Low, Medium, High, Off)", hideable: true, hidden: !shallHide("fanAdjust_${buttonNumber}")) {
-			input "fanAdjust_${buttonNumber}_pushed", "capability.switchLevel", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "fanAdjust_${buttonNumber}_held", "capability.switchLevel", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-		section("Shades (Adjust - Up, Down, or Stop)", hideable: true, hidden: !shallHide("shadeAdjust_${buttonNumber}")) {
-			input "shadeAdjust_${buttonNumber}_pushed", "capability.doorControl", title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
-			if(showHeld()) input "shadeAdjust_${buttonNumber}_held", "capability.doorControl", title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
-		}
-        section(" "){}
+        def myDetail
+        for(i in 1..17) {//Build 1st 17 Button Config Options
+        	myDetail = getPrefDetails().find{it.sOrder==i}
+        	section(myDetail.secLabel, hideable: true, hidden: !(shallHide("${myDetail.id}${buttonNumber}") || shallHide("${myDetail.sub}${buttonNumber}"))) {
+				input "${myDetail.id}${buttonNumber}_pushed", myDetail.cap, title: "When Pushed", multiple: true, required: false, submitOnChange: collapseAll
+				if(myDetail.sub && isReq("${myDetail.id}${buttonNumber}_pushed")) input "${myDetail.sub}${buttonNumber}_pushed", "number", title: myDetail.sTitle, multiple: false, required: isReq("${myDetail.id}${buttonNumber}_pushed"), description: myDetail.sDesc
+				if(showHeld()) input "${myDetail.id}${buttonNumber}_held", myDetail.cap, title: "When Held", multiple: true, required: false, submitOnChange: collapseAll
+				if(myDetail.sub && isReq("${myDetail.id}${buttonNumber}_held")) input "${myDetail.sub}${buttonNumber}_held", "number", title: myDetail.sTitle, multiple: false, required: isReq("${myDetail.id}${buttonNumber}_held"), description: myDetail.sDesc
+			}
+        	if(i==3 || i==8 || i==13 || i==17) section(" "){}
+        }        
 		section("Set Mode", hideable: true, hidden: !shallHide("mode_${buttonNumber}")) {
 			input "mode_${buttonNumber}_pushed", "mode", title: "When Pushed", required: false, submitOnChange: collapseAll
 			if(showHeld())input "mode_${buttonNumber}_held", "mode", title: "When Held", required: false, submitOnChange: collapseAll
@@ -193,10 +123,11 @@ def getButtonSections(buttonNumber) {
 			input "notifications_${buttonNumber}_pushed", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
             input "phone_${buttonNumber}_pushed","phone" ,title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
             input "valNotify${buttonNumber}_pushed","bool" ,title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll
-            if(showHeld()) paragraph "*************\nWHEN HELD\n*************"
-			if(showHeld()) input "notifications_${buttonNumber}_held", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
-			if(showHeld()) input "phone_${buttonNumber}_held", "phone", title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
-			if(showHeld()) input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll			
+            if(showHeld()) { paragraph "*************\nWHEN HELD\n*************"
+				input "notifications_${buttonNumber}_held", "text", title: "Message", description: "Enter message to send", required: false, submitOnChange: collapseAll
+				input "phone_${buttonNumber}_held", "phone", title: "Send Text To", description: "Enter phone number", required: false, submitOnChange: collapseAll
+				input "valNotify${buttonNumber}_held", "bool", title: "Notify In App?", required: false, defaultValue: false, submitOnChange: collapseAll
+            }
 		}
         if(enableSpec()){
         	section(" "){}
@@ -222,10 +153,16 @@ def shallHide(myFeature) {
 	return true
 }
 
+def isReq(myFeature) {
+    (settings[myFeature])? true : false
+}
+
 def getDescription(dNumber) {
-    def descript = "Nothing Configured"
-    def anySettings = settings.find{it.key.contains("_${dNumber}_")}
-    if(anySettings) descript = "PUSHED:"+getDescDetails(dNumber,"_pushed")+"\n\nHELD:"+getDescDetails(dNumber,"_held")//"CONFIGURED : Tap to edit"
+    def descript = ""
+    if(!(settings.find{it.key.contains("_${dNumber}_")})) return "Tap to configure"
+    if(settings.find{it.key.contains("_${dNumber}_pushed")}) descript = "\nPUSHED:"+getDescDetails(dNumber,"_pushed")+"\n"
+    if(settings.find{it.key.contains("_${dNumber}_held")}) descript = descript+"\nHELD:"+getDescDetails(dNumber,"_held")+"\n"
+    //if(anySettings) descript = "PUSHED:"+getDescDetails(dNumber,"_pushed")+"\n\nHELD:"+getDescDetails(dNumber,"_held")//"CONFIGURED : Tap to edit"
 	return descript
 }
 
@@ -233,12 +170,12 @@ def getDescDetails(bNum, type){
 	def numType=bNum+type
 	def preferenceNames = settings.findAll{it.key.contains("_${numType}")}.sort()		//get all configured settings that: match button# and type, AND are not false
     if(!preferenceNames){
-    	return "  **Not Configured**"
+    	return " **Not Configured** "
     }
     else {
     	def formattedPage =""
     	preferenceNames.each {eachPref->
-        	def prefDetail = getPreferenceDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
+        	def prefDetail = getPrefDetails().find{eachPref.key.contains(it.id)}	//gets decription of action being performed(eg Turn On)
         	def prefDevice = " : ${eachPref.value}" - "[" - "]"											//name of device the action is being performed on (eg Bedroom Fan)
             def prefSubValue = settings[prefDetail.sub + numType]?:"(!Missing!)"
             if(prefDetail.type=="normal") formattedPage += "\n- ${prefDetail.desc}${prefDevice}"
@@ -269,30 +206,30 @@ def defaultLabel() {
 	return "${buttonDevice} Mapping"
 }
 
-def getPreferenceDetails(){
+def getPrefDetails(){
 	def detailMappings =
-    	[[id:'lights_',desc:'Toggle On/Off',comm:toggle, type:"normal"],
-         [id:'lightsDT_', desc:'Toggle Off/Dim to ', comm:dimToggle, sub:"valDT", type:"hasSub"],
-     	 [id:'lightOn_',desc:'Turn On ',comm:turnOn, type:"normal"],
-     	 [id:"lightOff_",desc:'Turn Off',comm:turnOff, type:"normal"],
-     	 [id:"lightDim_",desc:'Dim to ',comm:turnDim, sub:"valLight", type:"hasSub"],
-     	 [id:"lightD2m_",desc:'Dim to ',comm:turnDim, sub:"valLight2", type:"hasSub"],
-         [id:'dimPlus_',desc:'Brightness +',comm:levelUp, sub:"valDimP", type:"hasSub"],
-     	 [id:'dimMinus_',desc:'Brightness -',comm:levelDown, sub:"valDimM", type:"hasSub"],
-     	 [id:"fanAdjust_",desc:'Adjust',comm:adjustFan, type:"normal"],
-     	 [id:"shadeAdjust_",desc:'Adjust',comm:adjustShade, type:"normal"],
-     	 [id:"locks_",desc:'Lock',comm:setUnlock, type:"normal"],
-         [id:"speakerpp_",desc:'Toggle Play/Pause',comm:speakerplaystate, type:"normal"],
-         [id:'speakernt_',desc:'Next Track',comm:speakernexttrack, type:"normal"],
-    	 [id:'speakermu_',desc:'Mute',comm:speakermute, type:"normal"],
-     	 [id:'speakervu_',desc:'Volume +',comm:levelUp, sub:"valSpeakU", type:"hasSub"],
-     	 [id:"speakervd_",desc:'Volume -',comm:levelDown, sub:"valSpeakD", type:"hasSub"],
-     	 [id:"mode_",desc:'Set Mode',comm:changeMode, type:"normal"],
-         [id:"notifications_",desc:'Send Push Notification',comm:messageHandle, sub:"valNotify", type:"bool"],
-         [id:'sirens_',desc:'Toggle',comm:toggle, type:"normal"],
-     	 [id:"phone_",desc:'Send SMS',comm:smsHandle, sub:"notifications_", type:"normal"],
-     	 [id:"phrase_",desc:'Run Routine',comm:runRout, type:"normal"],
-         [id:"container_",desc:'Cycle Playlist',comm:cyclePL, type:"normal"],         
+    	[[id:'lightOn_', sOrder:1, desc:'Turn On ', comm:turnOn, type:"normal", secLabel: "Switches (Turn On)", cap: "capability.switch"],
+         [id:'lights_', sOrder:3, desc:'Toggle On/Off', comm:toggle, type:"normal", secLabel: "Switches (Toggle On/Off)", cap: "capability.switch"],
+     	 [id:"lightOff_", sOrder:2, desc:'Turn Off', comm:turnOff, type:"normal", secLabel: "Switches (Turn Off)", cap: "capability.switch"],
+     	 [id:"lightDim_", sOrder:4, desc:'Dim to ', comm:turnDim, sub:"valLight", type:"hasSub", secLabel: "Dimmers (On to Level - Group 1)", cap: "capability.switchLevel", sTitle: "Bright Level", sDesc:"0 to 100%"],
+     	 [id:"lightD2m_", sOrder:5, desc:'Dim to ', comm:turnDim, sub:"valLight2", type:"hasSub", secLabel: "Dimmers (On to Level - Group 2)", cap: "capability.switchLevel", sTitle: "Bright Level", sDesc:"0 to 100%"],
+         [id:'dimPlus_', sOrder:6, desc:'Brightness +', comm:levelUp, sub:"valDimP", type:"hasSub", secLabel: "Dimmers (Increase Level By)", cap: "capability.switchLevel", sTitle: "Increase by", sDesc:"0 to 15"],
+     	 [id:'dimMinus_', sOrder:7, desc:'Brightness -', comm:levelDown, sub:"valDimM", type:"hasSub", secLabel: "Dimmers (Decrease Level By)", cap: "capability.switchLevel", sTitle: "Decrease by", sDesc:"0 to 15"],
+         [id:'lightsDT_', sOrder:8, desc:'Toggle Off/Dim to ', comm:dimToggle, sub:"valDT", type:"hasSub", secLabel: "Dimmers (Toggle OnToLevel/Off)", cap: "capability.switchLevel", sTitle: "Bright Level", sDesc:"0 to 100%"],
+         [id:"speakerpp_", sOrder:9, desc:'Toggle Play/Pause', comm:speakerplaystate, type:"normal", secLabel: "Speakers (Toggle Play/Pause)", cap: "capability.musicPlayer"],
+     	 [id:'speakervu_', sOrder:10, desc:'Volume +', comm:levelUp, sub:"valSpeakU", type:"hasSub", secLabel: "Speakers (Increase Vol By)", cap: "capability.musicPlayer", sTitle: "Increase by", sDesc:"0 to 15"],
+     	 [id:"speakervd_", sOrder:11, desc:'Volume -', comm:levelDown, sub:"valSpeakD", type:"hasSub", secLabel: "Speakers (Decrease Vol By)", cap: "capability.musicPlayer", sTitle: "Decrease by", sDesc:"0 to 15"],
+         [id:'speakernt_', sOrder:12, desc:'Next Track', comm:speakernexttrack, type:"normal", secLabel: "Speakers (Go to Next Track)", cap: "capability.musicPlayer"],
+    	 [id:'speakermu_', sOrder:13, desc:'Mute', comm:speakermute, type:"normal", secLabel: "Speakers (Toggle Mute/Unmute)", cap: "capability.musicPlayer"],
+         [id:'sirens_', sOrder:14, desc:'Toggle', comm:toggle, type:"normal", secLabel: "Sirens (Toggle)", cap: "capability.alarm"],
+     	 [id:"locks_", sOrder:15, desc:'Lock', comm:setUnlock, type:"normal", secLabel: "Locks (Lock Only)", cap: "capability.lock"],
+     	 [id:"fanAdjust_", sOrder:16,desc:'Adjust', comm:adjustFan, type:"normal", secLabel: "Fans (Adjust - Low, Medium, High, Off)", cap: "capability.switchLevel"],
+     	 [id:"shadeAdjust_", sOrder:17,desc:'Adjust', comm:adjustShade, type:"normal", secLabel: "Shades (Adjust - Up, Down, or Stop)", cap: "capability.doorControl"],
+     	 [id:"mode_", desc:'Set Mode', comm:changeMode, type:"normal"],
+     	 [id:"phrase_", desc:'Run Routine', comm:runRout, type:"normal"],
+		 [id:"notifications_", desc:'Send Push Notification', comm:messageHandle, sub:"valNotify", type:"bool"],
+     	 [id:"phone_", desc:'Send SMS', comm:smsHandle, sub:"notifications_", type:"normal"],
+         [id:"container_", desc:'Cycle Playlist', comm:cyclePL, type:"normal"],         
         ]
     return detailMappings
 }
@@ -304,7 +241,7 @@ def buttonEvent(evt) {
 		log.debug "$buttonDevice: Button $buttonNumber was $pressType"
     	def preferenceNames = settings.findAll{it.key.contains("_${buttonNumber}_${pressType}")}
     	preferenceNames.each{eachPref->
-        	def prefDetail = getPreferenceDetails()?.find{eachPref.key.contains(it.id)}		//returns the detail map of id,desc,comm,sub
+        	def prefDetail = getPrefDetails()?.find{eachPref.key.contains(it.id)}		//returns the detail map of id,desc,comm,sub
         	def PrefSubValue = settings["${prefDetail.sub}${buttonNumber}_${pressType}"]	//value of subsetting (eg 100)
         	if(prefDetail.sub) "$prefDetail.comm"(eachPref.value,PrefSubValue)
         	else "$prefDetail.comm"(eachPref.value)
